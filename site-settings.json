@@ -146,12 +146,12 @@
 					},
 					{
 						"name": "gallery",
-						"enable": true,
+						"enable": false,
 						"label": "Gallery"
 					},
 					{
 						"name": "video",
-						"enable": true,
+						"enable": false,
 						"label": "Video"
 					},
 					{
@@ -217,7 +217,7 @@
 		"sub_title": "Read and share new perspectives on just about any topic. Everyone’s welcome."
 	},
 	"contact_page": {
-		"enable": false,
+		"enable": true,
 		"title": "Get in touch",
 		"sub_title": "We’d love to hear from you. Fill out the form below to get in touch with us.",
 		"form": {
@@ -228,17 +228,17 @@
 			{
 				"name": "address",
 				"title": "🚀 ADDRESS",
-				"desc": "123 Main Street, New York, NY 10001"
+				"desc": "Lagos, Nigeria"
 			},
 			{
 				"name": "email",
 				"title": "💌 EMAIL",
-				"desc": "example@example.com"
+				"desc": "sammyguru.online@aol.com"
 			},
 			{
 				"name": "phone",
 				"title": "☎️ PHONE",
-				"desc": "+88 123 456 789"
+				"desc": "+2348104640842"
 			},
 			{
 				"name": "working_hours",
