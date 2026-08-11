@@ -18,12 +18,12 @@
 		"features_list": ["Create a free account.", "Write your stories."]
 	},
 	"top_banner": {
-		"enable": true,
+		"enable": false,
 		"description": "-50% Intro price for the next 72 hours only!.",
 		"end_link": {
 			"url": "https://themeforest.net/item/ncmaz-nextjs-headless-wordpress-blog-magazine/47815656",
 			"text": "Buy now  →",
-			"new_tab": true
+			"new_tab": false
 		}
 	},
 	"top_category_section": {
@@ -44,8 +44,8 @@
 		"site_zip": "Your Zip",
 		"site_country": "Your Country",
 		"site_url": "https://www.yoursite.com",
-		"site_logo": "/logo.png",
-		"site_logo_light": "/logo-light.png",
+		"site_logo": "/logo-512x356.png",
+		"site_logo_light": "/logo-512x356.png",
 		"site_favicon": "/favicon.png"
 	},
 	"site_socials": [
@@ -82,7 +82,7 @@
 		}
 	},
 	"site_footer": {
-		"all_rights_reserved_text": "© 2024 BooliiTheme Company, Inc. All rights reserved."
+		"all_rights_reserved_text": "© 2026 SammyGuru Tech. All rights reserved."
 	},
 	"single_page": {
 		"show_view_cout": true,
@@ -94,16 +94,16 @@
 			"title": "Recommended searches",
 			"items": [
 				{
-					"title": "Programming",
-					"url": "/search/posts/programming"
+					"title": "Samsung",
+					"url": "/search/posts/samsung"
 				},
 				{
-					"title": "Design",
-					"url": "/search/posts/design"
+					"title": "One UI",
+					"url": "/search/posts/one-ui"
 				},
 				{
-					"title": "Technology",
-					"url": "/search/posts/technology"
+					"title": "Settings",
+					"url": "/search/posts/settings"
 				}
 			]
 		},
@@ -156,7 +156,7 @@
 					},
 					{
 						"name": "audio",
-						"enable": true,
+						"enable": false,
 						"label": "Audio"
 					}
 				]
@@ -211,12 +211,13 @@
 		"description": "Discover the most outstanding articles on all topics of life. Write your stories and share them with the community. "
 	},
 	"help_page": {
+		"enable": false,
 		"uri": "/helps",
 		"title": "Helps",
 		"sub_title": "Read and share new perspectives on just about any topic. Everyone’s welcome."
 	},
 	"contact_page": {
-		"enable": true,
+		"enable": false,
 		"title": "Get in touch",
 		"sub_title": "We’d love to hear from you. Fill out the form below to get in touch with us.",
 		"form": {
@@ -251,7 +252,7 @@
 		]
 	},
 	"document_page": {
-		"enable": true,
+		"enable": false,
 		"uri": "/documents",
 		"title": "Documents",
 		"sub_title": "Read and share new perspectives on just about any topic. Everyone’s welcome."
