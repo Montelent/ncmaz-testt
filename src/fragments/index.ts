@@ -81,6 +81,27 @@ export const NC_POST_FULL_FRAGMENT = gql(/* GraphQL */ `
 		excerpt
 		databaseId
 		title
+
+		seo {
+  title
+  description
+  canonicalUrl
+  robots
+  jsonLd {
+    raw
+  }
+  openGraph {
+    title
+    description
+    url
+    type
+    siteName
+    twitterMeta {
+      card
+    }
+  }
+}
+
 		content
 		author {
 			node {
@@ -177,6 +198,26 @@ export const NC_POST_FULL_VS_EDITOR_BLOCK_NO_CONTENT_FRAGMENT = gql(
 			excerpt
 			databaseId
 			title
+			seo {
+  title
+  description
+  canonicalUrl
+  robots
+  jsonLd {
+    raw
+  }
+  openGraph {
+    title
+    description
+    url
+    type
+    siteName
+    twitterMeta {
+      card
+    }
+  }
+}
+
 			editorBlocks(flat: true) {
 				__typename
 				renderedHtml
