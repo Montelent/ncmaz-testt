@@ -26,7 +26,7 @@ const SingleType2: FC<Props> = ({ post }) => {
       {/* SINGLE HEADER */}
       <header className="container rounded-xl">
         <div className="max-w-screen-md mx-auto">
-          <SingleHeader post={{ ...post }} hiddenDesc />
+          <SingleHeader post={post} hiddenDesc />
           {!featuredImage?.sourceUrl && (
             <div className="my-5 border-b border-neutral-200 dark:border-neutral-800 "></div>
           )}
