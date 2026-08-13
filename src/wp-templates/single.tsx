@@ -69,7 +69,6 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 
 	const _post: any = props.data?.post || {}
 
-	// Build URL without fragile template literals (avoids broken canonical in HTML)
 	const siteUrl = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
 	const postUri = typeof _post.uri === 'string' ? _post.uri : ''
 	const fallbackCanonical =
@@ -190,19 +189,22 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		)
 	}
 
+	const imageUrl = featuredImage?.sourceUrl || null
+
 	return (
 		<>
-			<RankMathHead seo={rankMathSeo} />
+			<RankMathHead seo={rankMathSeo} imageUrl={imageUrl} />
 
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
-				pageFeaturedImageUrl={featuredImage?.sourceUrl}
+				pageFeaturedImageUrl={imageUrl}
 				pageTitle={title}
 				pageDescription={excerpt || ''}
 				generalSettings={
 					props.data?.generalSettings as NcgeneralSettingsFieldsFragmentFragment
 				}
+				disableDefaultSeo={!!rankMathSeo}
 			>
 				{ncPostMetaData?.showRightSidebar ? (
 					<div>
