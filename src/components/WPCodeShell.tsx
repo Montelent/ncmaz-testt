@@ -12,7 +12,7 @@ import {
 export default function WPCodeShell({ children }: { children: React.ReactNode }) {
 	const { data, error } = useQuery(WPCODE_SNIPPETS_QUERY, {
 		errorPolicy: 'ignore',
-		ssr: false, // never run during SSR / static generation
+		ssr: false,
 	})
 
 	if (error || !data) {
