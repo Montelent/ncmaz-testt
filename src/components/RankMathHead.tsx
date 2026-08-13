@@ -27,6 +27,13 @@ export default function RankMathHead({ seo }: { seo?: RankMathSeo | null }) {
 	const description =
 		seo.description?.replace(/<[^>]*>?/gm, '').trim() || undefined
 
+	const ogType =
+		seo.openGraph?.type === 'article' || seo.openGraph?.type === 'Article'
+			? 'article'
+			: seo.openGraph?.type === 'website'
+				? 'website'
+				: 'article'
+
 	return (
 		<>
 			<NextSeo
@@ -41,7 +48,7 @@ export default function RankMathHead({ seo }: { seo?: RankMathSeo | null }) {
 						seo.openGraph?.description?.replace(/<[^>]*>?/gm, '').trim() ||
 						description,
 					url: seo.openGraph?.url || seo.canonicalUrl || undefined,
-					type: seo.openGraph?.type === 'article' ? 'article' : 'website',
+					type: ogType,
 					siteName: seo.openGraph?.siteName || undefined,
 				}}
 				twitter={{
@@ -52,14 +59,12 @@ export default function RankMathHead({ seo }: { seo?: RankMathSeo | null }) {
 				}}
 			/>
 
-			{seo.jsonLd?.raw && (
+			{seo.jsonLd?.raw ? (
 				<script
 					type="application/ld+json"
-					dangerouslySetInnerHTML={{
-						__html: seo.jsonLd.raw,
-					}}
+					dangerouslySetInnerHTML={{ __html: seo.jsonLd.raw }}
 				/>
-			)}
+			) : null}
 		</>
 	)
 }
