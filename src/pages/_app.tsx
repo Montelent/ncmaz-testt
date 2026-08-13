@@ -13,16 +13,16 @@ import NextNProgress from 'nextjs-progressbar'
 import themeJson from '@/../theme.json'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
 import dynamic from 'next/dynamic'
+import SiteWrapperProvider from '@/container/SiteWrapperProvider'
 
-// Both must be client-only
+// Client-only shells (do NOT wrap the page Component)
 const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
 	ssr: false,
 })
 
-const SiteWrapperProvider = dynamic(
-	() => import('@/container/SiteWrapperProvider'),
-	{ ssr: false },
-)
+const ClientOnlyUI = dynamic(() => import('@/container/ClientOnlyUI'), {
+	ssr: false,
+})
 
 const poppins = Poppins({
 	subsets: ['latin'],
@@ -38,34 +38,39 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 			<GoogleAnalytics trackPageViews />
 
 			<FaustProvider pageProps={pageProps}>
-				<WPCodeShell>
-					<WordPressBlocksProvider
-						config={{
-							blocks,
-							theme: fromThemeJson(themeJson),
-						}}
-					>
-						<SiteWrapperProvider {...pageProps}>
-							<style jsx global>{`
-								html {
-									font-family: ${poppins.style.fontFamily};
-								}
-							`}</style>
-							<NextNProgress color="#818cf8" />
-							<Component {...pageProps} key={router.asPath} />
-							<Toaster
-								position="bottom-left"
-								toastOptions={{
-									style: {
-										fontSize: '14px',
-										borderRadius: '0.75rem',
-									},
-								}}
-								containerClassName="text-sm"
-							/>
-						</SiteWrapperProvider>
-					</WordPressBlocksProvider>
-				</WPCodeShell>
+				<WordPressBlocksProvider
+					config={{
+						blocks,
+						theme: fromThemeJson(themeJson),
+					}}
+				>
+					<SiteWrapperProvider {...pageProps}>
+						<style jsx global>{`
+							html {
+								font-family: ${poppins.style.fontFamily};
+							}
+						`}</style>
+						<NextNProgress color="#818cf8" />
+
+						{/* Page must SSR / SSG under FaustProvider */}
+						<Component {...pageProps} key={router.asPath} />
+
+						{/* Client-only extras */}
+						<WPCodeShell />
+						<ClientOnlyUI />
+
+						<Toaster
+							position="bottom-left"
+							toastOptions={{
+								style: {
+									fontSize: '14px',
+									borderRadius: '0.75rem',
+								},
+							}}
+							containerClassName="text-sm"
+						/>
+					</SiteWrapperProvider>
+				</WordPressBlocksProvider>
 			</FaustProvider>
 		</>
 	)
