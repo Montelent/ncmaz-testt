@@ -1,12 +1,14 @@
 import { getWordPressProps, WordPressTemplate } from '@faustwp/core'
 import { WordPressTemplateProps } from '../types'
-import { GetStaticProps } from 'next'
-import { REVALIDATE_TIME } from '@/contains/contants'
+import { GetServerSideProps } from 'next'
 
 export default function Page(props: WordPressTemplateProps) {
 	return <WordPressTemplate {...props} />
 }
 
-export const getStaticProps: GetStaticProps = (ctx) => {
-	return getWordPressProps({ ctx, revalidate: REVALIDATE_TIME })
+/**
+ * SSR for "/" — avoids Apollo invariant #31 during Hostinger static generation.
+ */
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+	return getWordPressProps({ ctx })
 }
