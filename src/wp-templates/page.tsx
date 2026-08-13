@@ -8,6 +8,7 @@ import { FaustTemplate, flatListToHierarchical } from '@faustwp/core'
 import { FOOTER_LOCATION, PRIMARY_LOCATION } from '@/contains/menu'
 import PageLayout from '@/container/PageLayout'
 import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
+import RankMathHead from '@/components/RankMathHead'
 
 const Page: FaustTemplate<GetPageQuery> = (props) => {
 	// LOADING ----------
@@ -29,6 +30,8 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 
 	return (
 		<>
+			<RankMathHead seo={seo} />
+
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
