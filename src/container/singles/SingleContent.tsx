@@ -7,7 +7,10 @@ import useIntersectionObserver from '@/hooks/useIntersectionObserver'
 import PostCardLikeAction from '@/components/PostCardLikeAction/PostCardLikeAction'
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn'
 import { ArrowUpIcon } from '@heroicons/react/24/solid'
-import { GetPostSiglePageQuery } from '@/__generated__/graphql'
+import {
+	GetPostSiglePageQuery,
+	NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+} from '@/__generated__/graphql'
 import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment'
 import NcBookmark from '@/components/NcBookmark/NcBookmark'
 import SingleCommentWrap from './SingleCommentWrap'
@@ -51,7 +54,9 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		status,
 		date,
 		editorBlocks,
-	} = getPostDataFromPostFragment(post || {})
+	} = getPostDataFromPostFragment(
+		(post || {}) as unknown as NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+	)
 	let blocks: (ContentBlock | null)[] = []
 	if (editorBlocks) {
 		blocks = flatListToHierarchical(editorBlocks as any, {
@@ -200,7 +205,9 @@ const StickyAction = forwardRef(function (
 ) {
 	//
 	const { content, databaseId, ncPostMetaData, uri, commentCount } =
-		getPostDataFromPostFragment(post || {})
+		getPostDataFromPostFragment(
+			(post || {}) as unknown as NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+		)
 
 	const { postData: musicPlayerPostData } = useMusicPlayer()
 
