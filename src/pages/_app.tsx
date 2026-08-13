@@ -8,17 +8,21 @@ import { AppProps } from 'next/app'
 import { WordPressBlocksProvider, fromThemeJson } from '@faustwp/blocks'
 import blocks from '@/wp-blocks'
 import { Poppins } from 'next/font/google'
-import SiteWrapperProvider from '@/container/SiteWrapperProvider'
 import { Toaster } from 'react-hot-toast'
 import NextNProgress from 'nextjs-progressbar'
 import themeJson from '@/../theme.json'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
 import dynamic from 'next/dynamic'
 
-// This is the critical line – loads WPCodeShell only on the client
+// Client-only – prevents Apollo invariant 31 during static generation
 const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
 	ssr: false,
 })
+
+const SiteWrapperProvider = dynamic(
+	() => import('@/container/SiteWrapperProvider'),
+	{ ssr: false },
+)
 
 const poppins = Poppins({
 	subsets: ['latin'],
