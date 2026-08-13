@@ -148,6 +148,6 @@ Page.query = gql(`
       }
     }
   }
-`)
+`) as any
 
 export default Page
