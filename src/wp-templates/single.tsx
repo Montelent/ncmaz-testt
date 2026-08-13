@@ -69,7 +69,6 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 
 	const _post: any = props.data?.post || {}
 
-	// Prefer Rank Math from GraphQL; safe fallback if seo is missing
 	const siteUrl = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
 	const rankMathFromApi = (props.data as any)?.post?.seo ?? null
 	const rankMathSeo =
@@ -191,11 +190,11 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		<>
 			<RankMathHead seo={rankMathSeo} />
 
+			{/* Avoid duplicate title/description when RankMathHead is active */}
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
 				pageFeaturedImageUrl={featuredImage?.sourceUrl}
-				{/* Avoid duplicate title/description when RankMathHead is active */}
 				pageTitle={rankMathSeo ? undefined : title}
 				pageDescription={rankMathSeo ? undefined : excerpt || ''}
 				generalSettings={
