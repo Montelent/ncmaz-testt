@@ -5,7 +5,7 @@ loadEnvConfig(process.cwd())
 const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL?.replace(/\/$/, '')
 
 if (!wordpressUrl) {
-  console.error('❌ NEXT_PUBLIC_WORDPRESS_URL is not set. Codegen cannot fetch the GraphQL schema.')
+  console.error('❌ NEXT_PUBLIC_WORDPRESS_URL is not set. Cannot fetch GraphQL schema.')
   process.exit(1)
 }
 
