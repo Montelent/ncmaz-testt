@@ -179,16 +179,19 @@ const Page: FaustPage<{}> = (props) => {
 							isAllowComments: commentStatus === 'open',
 							postFormatsSelected: postFormats,
 							videoUrl: ncmazVideoUrl?.videoUrl || '',
-							objGalleryImgs.reduce((acc: Record<string, any>, cur, index) => {
-								return {
-									...acc,
-									[`image${index + 1}`]: {
-										sourceUrl: cur?.sourceUrl || '',
-										altText: cur?.altText || '',
-										databaseId: cur?.databaseId || 0,
-									},
-								}
-							}, {}),
+							objGalleryImgs: (ncmazGalleryImgs || []).reduce(
+								(acc: Record<string, any>, cur, index) => {
+									return {
+										...acc,
+										[`image${index + 1}`]: {
+											sourceUrl: cur?.sourceUrl || '',
+											altText: cur?.altText || '',
+											databaseId: cur?.databaseId || 0,
+										},
+									}
+								},
+								{},
+							),
 						}}
 					/>
 				</div>
