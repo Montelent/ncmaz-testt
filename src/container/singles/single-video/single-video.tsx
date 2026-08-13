@@ -84,9 +84,9 @@ const SingleTypeVideo: FC<Props> = ({ post }) => {
 							className="flex-shrink-0 leading-none"
 							hiddenCategories
 							avatarRounded="rounded-full shadow-inner"
-							post={post as Record<string, any>}
+							post={post as any}
 						/>
-						<SingleMetaAction2 post={{ ...post }} />
+						<SingleMetaAction2 post={post as any} />
 					</div>
 				</div>
 			</div>
