@@ -9,4 +9,6 @@ export default setConfig({
   templates,
   possibleTypes,
   usePersistedQueries: false,
+  // Prefer POST so large queries never hit URL length limits (414)
+  useGETForQueries: false,
 });
