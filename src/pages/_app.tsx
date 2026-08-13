@@ -27,10 +27,10 @@ const poppins = Poppins({
 	weight: ['300', '400', '500', '600', '700'],
 })
 
-// Safe during static generation – prevents Apollo invariant #31
 function WPCodeShell({ children }: { children: React.ReactNode }) {
+	// CRITICAL: skip the query on the server so static generation never hits Apollo
 	const { data, error } = useQuery(WPCODE_SNIPPETS_QUERY, {
-		skip: typeof window === 'undefined', // never run on the server
+		skip: typeof window === 'undefined',
 		errorPolicy: 'ignore',
 	})
 
