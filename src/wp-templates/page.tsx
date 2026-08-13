@@ -16,8 +16,8 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 	}
 
 	// for this page
-	const { title, editorBlocks, featuredImage, ncPageMeta } =
-		props.data?.page || {}
+	const { title, editorBlocks, featuredImage, ncPageMeta, seo } =
+  props.data?.page || {}
 
 	const isGutenbergPage =
 		!!props.__SEED_NODE__?.isFrontPage || ncPageMeta?.isFullWithPage
@@ -88,6 +88,26 @@ Page.query = gql(`
   query GetPage($databaseId: ID!, $asPreview: Boolean = false, $headerLocation: MenuLocationEnum!, $footerLocation: MenuLocationEnum!) {
     page(id: $databaseId, idType: DATABASE_ID, asPreview: $asPreview) {
       title
+	  seo {
+  title
+  description
+  canonicalUrl
+  robots
+  jsonLd {
+    raw
+  }
+  openGraph {
+    title
+    description
+    url
+    type
+    siteName
+    twitterMeta {
+      card
+    }
+  }
+}
+
       ncPageMeta {
         isFullWithPage
       }
