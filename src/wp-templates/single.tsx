@@ -69,23 +69,27 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 
 	const _post: any = props.data?.post || {}
 
+	// Build URL without fragile template literals (avoids broken canonical in HTML)
 	const siteUrl = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+	const postUri = typeof _post.uri === 'string' ? _post.uri : ''
+	const fallbackCanonical =
+		siteUrl && postUri ? siteUrl + postUri : null
+
 	const rankMathFromApi = (props.data as any)?.post?.seo ?? null
 	const rankMathSeo =
 		rankMathFromApi ||
 		(_post?.title
 			? {
-					title: _post.title as string,
+					title: String(_post.title),
 					description:
 						typeof _post.excerpt === 'string'
 							? _post.excerpt.replace(/<[^>]*>?/gm, '').trim()
 							: null,
-					canonicalUrl:
-						siteUrl && _post.uri ? `\( {siteUrl} \){_post.uri}` : null,
+					canonicalUrl: fallbackCanonical,
 					openGraph: {
-						title: _post.title as string,
+						title: String(_post.title),
 						type: 'article',
-						url: siteUrl && _post.uri ? `\( {siteUrl} \){_post.uri}` : null,
+						url: fallbackCanonical,
 					},
 				}
 			: null)
@@ -190,13 +194,12 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		<>
 			<RankMathHead seo={rankMathSeo} />
 
-			{/* Avoid duplicate title/description when RankMathHead is active */}
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
 				pageFeaturedImageUrl={featuredImage?.sourceUrl}
-				pageTitle={rankMathSeo ? undefined : title}
-				pageDescription={rankMathSeo ? undefined : excerpt || ''}
+				pageTitle={title}
+				pageDescription={excerpt || ''}
 				generalSettings={
 					props.data?.generalSettings as NcgeneralSettingsFieldsFragmentFragment
 				}
