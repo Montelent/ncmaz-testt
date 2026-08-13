@@ -65,7 +65,9 @@ const PostMeta2: FC<PostMeta2Props> = ({
 							<span className="mx-2 font-semibold">·</span>
 							<div className="ms-0">
 								<span className="text-xs">🏷 </span>
-								{categories?.nodes?.map((cat, index, arr) => (
+								{categories?.nodes?.map(
+  (cat: { name?: string | null }, index: number, arr: any[]) => (
+
 									<Link
 										key={cat.databaseId}
 										href={cat.uri || ''}
