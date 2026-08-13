@@ -70,6 +70,7 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 	}, [])
 
 	const _post = props.data?.post || {}
+	const rankMathSeo = _post.seo
 
 	// console.log('🚀 ~ file: single.tsx ~ line 68 ~ Component ~ _post', _post)
 
