@@ -8,5 +8,5 @@ import possibleTypes from "./possibleTypes.json";
 export default setConfig({
   templates,
   possibleTypes,
-  usePersistedQueries: true,
+  usePersistedQueries: false,
 });
