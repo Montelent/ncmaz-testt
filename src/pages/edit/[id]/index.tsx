@@ -180,7 +180,7 @@ const Page: FaustPage<{}> = (props) => {
 							postFormatsSelected: postFormats,
 							videoUrl: ncmazVideoUrl?.videoUrl || '',
 							objGalleryImgs: (ncmazGalleryImgs || []).reduce(
-								(acc: Record<string, any>, cur, index) => {
+  (acc: Record<string, any>, cur: any, index: number) => {
 									return {
 										...acc,
 										[`image${index + 1}`]: {
