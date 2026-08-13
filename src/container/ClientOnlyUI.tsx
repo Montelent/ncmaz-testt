@@ -11,7 +11,9 @@ export default function ClientOnlyUI(props: {
 }) {
 	return (
 		<>
-			<SiteWrapperChild {...props} />
+			<SiteWrapperChild
+				__TEMPLATE_QUERY_DATA__={props.__TEMPLATE_QUERY_DATA__ ?? {}}
+			/>
 			<LoginModal />
 		</>
 	)
