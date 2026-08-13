@@ -13,12 +13,15 @@ export default function SEO({ title, description, imageUrl, url }: Props) {
 	}
 
 	const descriptionNoHtmlTags = description?.replace(/<[^>]*>?/gm, '') || ''
+	const hasTextMeta = !!(title || descriptionNoHtmlTags)
 
 	return (
 		<>
 			<Head>
-				<meta property="og:type" content="website" />
-				<meta property="twitter:card" content="summary_large_image" />
+				{hasTextMeta && <meta property="og:type" content="website" />}
+				{(hasTextMeta || imageUrl) && (
+					<meta property="twitter:card" content="summary_large_image" />
+				)}
 
 				{title && (
 					<>
