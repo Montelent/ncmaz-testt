@@ -9,7 +9,7 @@ import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentB
 import { ArrowUpIcon } from '@heroicons/react/24/solid'
 import {
 	GetPostSiglePageQuery,
-	NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+	NcmazFcPostFullFieldsFragment, // ← changed
 } from '@/__generated__/graphql'
 import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment'
 import NcBookmark from '@/components/NcBookmark/NcBookmark'
@@ -55,7 +55,7 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		date,
 		editorBlocks,
 	} = getPostDataFromPostFragment(
-		(post || {}) as unknown as NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+		(post || {}) as unknown as NcmazFcPostFullFieldsFragment, // ← fixed
 	)
 	let blocks: (ContentBlock | null)[] = []
 	if (editorBlocks) {
@@ -206,7 +206,7 @@ const StickyAction = forwardRef(function (
 	//
 	const { content, databaseId, ncPostMetaData, uri, commentCount } =
 		getPostDataFromPostFragment(
-			(post || {}) as unknown as NcmazFcPostCardFieldsNotNcmazGalleryImgsFragment,
+			(post || {}) as unknown as NcmazFcPostFullFieldsFragment, // ← fixed
 		)
 
 	const { postData: musicPlayerPostData } = useMusicPlayer()
