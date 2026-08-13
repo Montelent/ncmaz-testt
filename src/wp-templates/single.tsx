@@ -1,6 +1,6 @@
-import { gql } from '../__generated__'
 import {
 	GetPostSiglePageQuery,
+	GetPostSiglePageDocument,
 	NcgeneralSettingsFieldsFragmentFragment,
 	NcmazFcUserReactionPostActionEnum,
 	NcmazFcUserReactionPostNumberUpdateEnum,
@@ -70,9 +70,20 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 	}, [])
 
 	const _post: any = props.data?.post || {}
-	const rankMathSeo = (props.data as any)?.post?.seo ?? null
 
-	// console.log('🚀 \~ file: single.tsx \~ line 68 \~ Component \~ _post', _post)
+	// Rank Math SEO from GraphQL (requires codegen after seo fields are in fragments)
+	// Fallback to post title/excerpt so meta is never empty
+	const rankMathSeo =
+		(props.data as any)?.post?.seo ??
+		(_post?.title || _post?.excerpt
+			? {
+					title: _post.title,
+					description: _post.excerpt?.replace(/<[^>]*>?/gm, '') || null,
+					canonicalUrl: _post.uri
+						? `\( {(process.env.NEXT_PUBLIC_URL || '').replace(/\/ \)/, '')}${_post.uri}`
+						: null,
+				}
+			: null)
 
 	const _relatedPosts = (props.data?.posts?.nodes as TPostCard[]) || []
 	const _top10Categories =
@@ -87,29 +98,24 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		excerpt,
 	} = getPostDataFromPostFragment(_post)
 
-	//
 	const {} = useGetPostsNcmazMetaByIds({
 		posts: (IS_PREVIEW ? [] : [_post]) as TPostCard[],
 	})
-	//
 
-	// Query update post view count
 	const [handleUpdateReactionCount, { reset }] = useMutation(
 		NC_MUTATION_UPDATE_USER_REACTION_POST_COUNT,
 		{
-			onCompleted: (data) => {
+			onCompleted: () => {
 				reset()
 			},
 		},
 	)
 
-	// update view count
 	useEffect(() => {
 		if (!isReady || IS_PREVIEW || !isUpdateViewCount) {
 			return
 		}
 
-		// user chua dang nhap, va update view count voi user la null
 		if (isAuthenticated === false) {
 			handleUpdateReactionCount({
 				variables: {
@@ -121,12 +127,10 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 			return
 		}
 
-		// user da dang nhap, va luc nay viewer dang fetch.
 		if (!viewer?.databaseId) {
 			return
 		}
 
-		// khi viewer fetch xong, luc nay viewer da co databaseId, va se update view count voi user la viewer
 		handleUpdateReactionCount({
 			variables: {
 				post_id: databaseId,
@@ -205,7 +209,6 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 								</div>
 							</div>
 
-							{/* RELATED POSTS */}
 							<DynamicSingleRelatedPosts
 								posts={_relatedPosts}
 								postDatabaseId={databaseId}
@@ -217,11 +220,9 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 						{renderHeaderType()}
 
 						<div className="container mt-10">
-							{/* SINGLE MAIN CONTENT */}
 							<SingleContent post={_post} />
 						</div>
 
-						{/* RELATED POSTS */}
 						<DynamicSingleRelatedPosts
 							posts={_relatedPosts}
 							postDatabaseId={databaseId}
@@ -243,35 +244,8 @@ Component.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-Component.query = gql(`
-  query GetPostSiglePage($databaseId: ID!, $post_databaseId: Int,$asPreview: Boolean = false, $headerLocation: MenuLocationEnum!, $footerLocation: MenuLocationEnum!) {
-    post(id: $databaseId, idType: DATABASE_ID, asPreview: $asPreview) {
-		...NcmazFcPostFullVsEditorBlocksNoContentFields
-    }
-    posts(where: {isRelatedOfPostId:$post_databaseId}) {
-      nodes {
-      ...PostCardFieldsNOTNcmazMEDIA
-      }
-    }
-    categories(first:10, where: { orderby: COUNT, order: DESC }) {
-      nodes {
-        ...NcmazFcCategoryFullFieldsFragment
-      }
-    }
-    generalSettings {
-      ...NcgeneralSettingsFieldsFragment
-    }
-    primaryMenuItems: menuItems(where: {location:$headerLocation}, first: 80) {
-      nodes {
-        ...NcPrimaryMenuFieldsFragment
-      }
-    }
-    footerMenuItems: menuItems(where: {location:$footerLocation}, first: 40) {
-      nodes {
-        ...NcFooterMenuFieldsFragment
-      }
-    }
-  }
-`) as any
+// Use generated DocumentNode (avoids Apollo #31).
+// After `npm run codegen`, this document must include post.seo for Rank Math.
+Component.query = GetPostSiglePageDocument as any
 
 export default Component
