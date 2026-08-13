@@ -1,12 +1,12 @@
 import { getWordPressProps, WordPressTemplate } from '@faustwp/core'
 import { WordPressTemplateProps } from '../types'
-import { GetServerSideProps } from 'next'
+import { GetStaticProps } from 'next'
+import { REVALIDATE_TIME } from '@/contains/contants'
 
 export default function Page(props: WordPressTemplateProps) {
 	return <WordPressTemplate {...props} />
 }
 
-// SSR instead of SSG – avoids Apollo invariant 31 during build
-export const getServerSideProps: GetServerSideProps = (ctx) => {
-	return getWordPressProps({ ctx })
+export const getStaticProps: GetStaticProps = (ctx) => {
+	return getWordPressProps({ ctx, revalidate: REVALIDATE_TIME })
 }
