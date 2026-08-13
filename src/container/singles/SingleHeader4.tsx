@@ -69,9 +69,9 @@ const SingleHeader4: FC<SingleHeader4Props> = ({
 							className="flex-shrink-0 leading-none"
 							hiddenCategories
 							avatarRounded="rounded-full shadow-inner"
-							post={{ ...(post as any) }}
+							post={post}
 						/>
-						<SingleMetaAction2 post={{ ...(post as any) }} />
+						<SingleMetaAction2 post={post} />
 					</div>
 					<div className="w-full border-b border-neutral-100 dark:border-neutral-800"></div>
 				</div>
