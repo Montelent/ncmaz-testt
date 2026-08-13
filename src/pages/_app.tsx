@@ -57,7 +57,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
 						{/* Client-only extras */}
 						<WPCodeShell />
-						<ClientOnlyUI />
+						<ClientOnlyUI
+							__TEMPLATE_QUERY_DATA__={
+								(pageProps as any).__TEMPLATE_QUERY_DATA__
+							}
+						/>
 
 						<Toaster
 							position="bottom-left"
