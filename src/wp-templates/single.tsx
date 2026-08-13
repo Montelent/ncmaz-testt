@@ -69,10 +69,10 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		}
 	}, [])
 
-	const _post = props.data?.post || {}
-	const rankMathSeo = _post.seo
+	const _post: any = props.data?.post || {}
+	const rankMathSeo = (props.data as any)?.post?.seo ?? null
 
-	// console.log('🚀 ~ file: single.tsx ~ line 68 ~ Component ~ _post', _post)
+	// console.log('🚀 \~ file: single.tsx \~ line 68 \~ Component \~ _post', _post)
 
 	const _relatedPosts = (props.data?.posts?.nodes as TPostCard[]) || []
 	const _top10Categories =
@@ -272,6 +272,6 @@ Component.query = gql(`
       }
     }
   }
-`)
+`) as any
 
 export default Component
