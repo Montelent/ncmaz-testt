@@ -26,13 +26,17 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 		parentKey: 'parentClientId',
 	})
 
-	// Fallback if Rank Math seo is not in the generated document yet
+	// Fragment-masked generalSettings — cast to read fields
+	const generalSettings = props.data
+		?.generalSettings as NcgeneralSettingsFieldsFragmentFragment | null | undefined
+
+	// Rank Math SEO, with safe fallback (no typed .description on masked object)
 	const pageSeo =
 		seo ??
 		(title
 			? {
 					title,
-					description: props.data?.generalSettings?.description || null,
+					description: generalSettings?.description ?? null,
 				}
 			: null)
 
@@ -45,9 +49,7 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
 				pageFeaturedImageUrl={featuredImage?.node?.sourceUrl}
 				pageTitle={title}
-				generalSettings={
-					props.data?.generalSettings as NcgeneralSettingsFieldsFragmentFragment
-				}
+				generalSettings={generalSettings}
 			>
 				<div className="nc-BgGlassmorphism absolute inset-x-0 z-[-1] flex min-h-0 overflow-hidden py-24 pl-20 md:top-10 xl:top-20">
 					<span className="block h-72 w-72 rounded-full bg-[#ef233c] opacity-10 mix-blend-multiply blur-3xl filter lg:h-96 lg:w-96"></span>
@@ -65,8 +67,7 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 					>
 						{isGutenbergPage && (
 							<h1 className="sr-only">
-								{/* @ts-ignore */}
-								{props.data?.generalSettings?.title || title || ''}
+								{generalSettings?.title || title || ''}
 							</h1>
 						)}
 
