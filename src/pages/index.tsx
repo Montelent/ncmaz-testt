@@ -6,8 +6,7 @@ export default function Page(props: WordPressTemplateProps) {
 	return <WordPressTemplate {...props} />
 }
 
-// Use SSR instead of SSG for the homepage.
-// This completely avoids the Apollo invariant 31 during "faust build".
+// SSR instead of SSG – avoids Apollo invariant 31 during build
 export const getServerSideProps: GetServerSideProps = (ctx) => {
 	return getWordPressProps({ ctx })
 }
