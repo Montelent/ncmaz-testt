@@ -13,42 +13,19 @@ import { Toaster } from 'react-hot-toast'
 import NextNProgress from 'nextjs-progressbar'
 import themeJson from '@/../theme.json'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
-import { useQuery } from '@apollo/client'
-import {
-	WPCODE_SNIPPETS_QUERY,
-	WPCodeHeaderSnippets,
-	WPCodeBodyOpenSnippets,
-	WPCodeFooterSnippets,
-} from '@/components/WPCodeSnippets'
+import dynamic from 'next/dynamic'
+
+// Load WPCodeShell only on the client – this completely prevents
+// Apollo invariant 31 during static generation
+const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
+	ssr: false,
+})
 
 const poppins = Poppins({
 	subsets: ['latin'],
 	display: 'swap',
 	weight: ['300', '400', '500', '600', '700'],
 })
-
-function WPCodeShell({ children }: { children: React.ReactNode }) {
-	// CRITICAL: skip the query on the server so static generation never hits Apollo
-	const { data, error } = useQuery(WPCODE_SNIPPETS_QUERY, {
-		skip: typeof window === 'undefined',
-		errorPolicy: 'ignore',
-	})
-
-	if (error || !data) {
-		return <>{children}</>
-	}
-
-	const snippets = data?.wpcodeSnippets ?? []
-
-	return (
-		<>
-			<WPCodeHeaderSnippets snippets={snippets} />
-			<WPCodeBodyOpenSnippets snippets={snippets} />
-			{children}
-			<WPCodeFooterSnippets snippets={snippets} />
-		</>
-	)
-}
 
 export default function MyApp({ Component, pageProps }: AppProps) {
 	const router = useRouter()
