@@ -1,12 +1,13 @@
 import { getWordPressProps, WordPressTemplate } from '@faustwp/core'
 import { WordPressTemplateProps } from '../types'
-import { GetStaticProps } from 'next'
-import { REVALIDATE_TIME } from '@/contains/contants'
+import { GetServerSideProps } from 'next'
 
 export default function Page(props: WordPressTemplateProps) {
 	return <WordPressTemplate {...props} />
 }
 
-export const getStaticProps: GetStaticProps = (ctx) => {
-	return getWordPressProps({ ctx, revalidate: REVALIDATE_TIME })
+// Use SSR instead of SSG for the homepage.
+// This completely avoids the Apollo invariant 31 during "faust build".
+export const getServerSideProps: GetServerSideProps = (ctx) => {
+	return getWordPressProps({ ctx })
 }
