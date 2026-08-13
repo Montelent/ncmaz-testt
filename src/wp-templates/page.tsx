@@ -18,7 +18,7 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 
 	// for this page
 	const { title, editorBlocks, featuredImage, ncPageMeta, seo } =
-  props.data?.page || {}
+		(props.data?.page as any) || {}
 
 	const isGutenbergPage =
 		!!props.__SEED_NODE__?.isFrontPage || ncPageMeta?.isFullWithPage
