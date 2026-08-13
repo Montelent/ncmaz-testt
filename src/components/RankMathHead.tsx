@@ -4,7 +4,7 @@ export type RankMathSeo = {
 	title?: string | null
 	description?: string | null
 	canonicalUrl?: string | null
-	robots?: string | null
+	robots?: string | string[] | null
 	jsonLd?: {
 		raw?: string | null
 	} | null
@@ -20,6 +20,39 @@ export type RankMathSeo = {
 	} | null
 }
 
+function toFrontendUrl(url?: string | null): string | undefined {
+	if (!url) return undefined
+	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
+		/\/$/,
+		'',
+	)
+	if (!frontend || !backend) return url
+	if (url.startsWith(backend)) {
+		return frontend + url.slice(backend.length)
+	}
+	return url
+}
+
+function extractJsonLd(raw?: string | null): string | null {
+	if (!raw) return null
+	const trimmed = raw.trim()
+	// Rank Math often returns a full <script type="application/ld+json">...</script>
+	const match = trimmed.match(
+		/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
+	)
+	if (match?.[1]) return match[1].trim()
+	// Already pure JSON
+	if (trimmed.startsWith('{') || trimmed.startsWith('[')) return trimmed
+	return null
+}
+
+function robotsToString(robots?: string | string[] | null): string {
+	if (!robots) return ''
+	if (Array.isArray(robots)) return robots.join(',').toLowerCase()
+	return String(robots).toLowerCase()
+}
+
 export default function RankMathHead({
 	seo,
 	imageUrl,
@@ -29,9 +62,12 @@ export default function RankMathHead({
 }) {
 	if (!seo) return null
 
-	const robots = seo.robots?.toLowerCase() || ''
+	const robotsStr = robotsToString(seo.robots)
 	const description =
 		seo.description?.replace(/<[^>]*>?/gm, '').trim() || undefined
+
+	const canonical = toFrontendUrl(seo.canonicalUrl)
+	const ogUrl = toFrontendUrl(seo.openGraph?.url) || canonical
 
 	const ogType =
 		seo.openGraph?.type === 'article' || seo.openGraph?.type === 'Article'
@@ -40,36 +76,50 @@ export default function RankMathHead({
 				? 'website'
 				: 'article'
 
+	const twitterCard = (seo.openGraph?.twitterMeta?.card || '').toUpperCase()
+	const jsonLdContent = extractJsonLd(seo.jsonLd?.raw || null)
+
+	// Rewrite backend domain inside JSON-LD if present
+	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
+		/\/$/,
+		'',
+	)
+	const jsonLdFinal =
+		jsonLdContent && frontend && backend
+			? jsonLdContent.split(backend).join(frontend)
+			: jsonLdContent
+
 	return (
 		<>
 			<NextSeo
 				title={seo.title || undefined}
 				description={description}
-				canonical={seo.canonicalUrl || undefined}
-				noindex={robots.includes('noindex')}
-				nofollow={robots.includes('nofollow')}
+				canonical={canonical}
+				noindex={robotsStr.includes('noindex')}
+				nofollow={robotsStr.includes('nofollow')}
 				openGraph={{
 					title: seo.openGraph?.title || seo.title || undefined,
 					description:
 						seo.openGraph?.description?.replace(/<[^>]*>?/gm, '').trim() ||
 						description,
-					url: seo.openGraph?.url || seo.canonicalUrl || undefined,
+					url: ogUrl,
 					type: ogType,
 					siteName: seo.openGraph?.siteName || undefined,
 					images: imageUrl ? [{ url: imageUrl }] : undefined,
 				}}
 				twitter={{
 					cardType:
-						seo.openGraph?.twitterMeta?.card === 'summary_large_image'
+						twitterCard === 'SUMMARY_LARGE_IMAGE'
 							? 'summaryLargeImage'
 							: 'summary',
 				}}
 			/>
 
-			{seo.jsonLd?.raw ? (
+			{jsonLdFinal ? (
 				<script
 					type="application/ld+json"
-					dangerouslySetInnerHTML={{ __html: seo.jsonLd.raw }}
+					dangerouslySetInnerHTML={{ __html: jsonLdFinal }}
 				/>
 			) : null}
 		</>
