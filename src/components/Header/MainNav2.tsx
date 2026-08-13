@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import AvatarDropdown from './AvatarDropdown'
 import SwitchDarkMode from '../SwitchDarkMode/SwitchDarkMode'
 import Navigation from '../Navigation/Navigation'
 import { MainNav1Props } from './MainNav1'
@@ -10,6 +9,10 @@ import { HeaderSearchForm, SearchIconBtn } from './HeaderSearch'
 import { NC_SITE_SETTINGS } from '@/contains/site-settings'
 
 const DynamicMenuBar = dynamic(() => import('@/components/MenuBar/MenuBar'), {
+	ssr: false,
+})
+
+const AvatarDropdown = dynamic(() => import('./AvatarDropdown'), {
 	ssr: false,
 })
 
