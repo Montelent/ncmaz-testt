@@ -1,7 +1,7 @@
-import { gql } from '@/__generated__'
 import EntryHeader from '../components/entry-header'
 import {
 	GetPageQuery,
+	GetPageDocument,
 	NcgeneralSettingsFieldsFragmentFragment,
 } from '../__generated__/graphql'
 import { FaustTemplate, flatListToHierarchical } from '@faustwp/core'
@@ -86,68 +86,8 @@ Page.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-// Note***: tat ca cac query trong cac page deu phai co generalSettings, no duoc su dung o compoent Wrap
-Page.query = gql(`
-  query GetPage($databaseId: ID!, $asPreview: Boolean = false, $headerLocation: MenuLocationEnum!, $footerLocation: MenuLocationEnum!) {
-    page(id: $databaseId, idType: DATABASE_ID, asPreview: $asPreview) {
-      title
-	  seo {
-  title
-  description
-  canonicalUrl
-  robots
-  jsonLd {
-    raw
-  }
-  openGraph {
-    title
-    description
-    url
-    type
-    siteName
-    twitterMeta {
-      card
-    }
-  }
-}
-
-      ncPageMeta {
-        isFullWithPage
-      }
-      featuredImage {
-        node {
-          altText
-          sourceUrl
-        }
-      }
-      editorBlocks(flat: true) {
-        __typename
-        renderedHtml
-        clientId
-        parentClientId
-        ...NcmazFaustBlockMagazineFragment
-        ...NcmazFaustBlockTermsFragment
-        ...NcmazFaustBlockCtaFragment
-        ...NcmazFaustBlockGroupFragment
-        ...CoreColumnsFragment
-        ...CoreColumnFragment
-      }
-    }
-    # common query for all page 
-    generalSettings {
-      ...NcgeneralSettingsFieldsFragment
-    }
-    primaryMenuItems: menuItems(where: { location:  $headerLocation  }, first: 80) {
-      nodes {
-        ...NcPrimaryMenuFieldsFragment
-      }
-    }
-    footerMenuItems: menuItems(where: {location:$footerLocation}, first: 40) {
-      nodes {
-        ...NcFooterMenuFieldsFragment
-      }
-    }
-  }
-`) as any
+// Use generated DocumentNode — fixes Apollo invariant #31
+// (inline gql() string no longer matched the codegen map after SEO fields were added)
+Page.query = GetPageDocument as any
 
 export default Page
