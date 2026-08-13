@@ -20,7 +20,13 @@ export type RankMathSeo = {
 	} | null
 }
 
-export default function RankMathHead({ seo }: { seo?: RankMathSeo | null }) {
+export default function RankMathHead({
+	seo,
+	imageUrl,
+}: {
+	seo?: RankMathSeo | null
+	imageUrl?: string | null
+}) {
 	if (!seo) return null
 
 	const robots = seo.robots?.toLowerCase() || ''
@@ -50,6 +56,7 @@ export default function RankMathHead({ seo }: { seo?: RankMathSeo | null }) {
 					url: seo.openGraph?.url || seo.canonicalUrl || undefined,
 					type: ogType,
 					siteName: seo.openGraph?.siteName || undefined,
+					images: imageUrl ? [{ url: imageUrl }] : undefined,
 				}}
 				twitter={{
 					cardType:
