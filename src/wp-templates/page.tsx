@@ -11,12 +11,10 @@ import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
 import RankMathHead from '@/components/RankMathHead'
 
 const Page: FaustTemplate<GetPageQuery> = (props) => {
-	// LOADING ----------
 	if (props.loading) {
 		return <>Loading...</>
 	}
 
-	// for this page
 	const { title, editorBlocks, featuredImage, ncPageMeta, seo } =
 		(props.data?.page as any) || {}
 
@@ -28,9 +26,19 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 		parentKey: 'parentClientId',
 	})
 
+	// Fallback if Rank Math seo is not in the generated document yet
+	const pageSeo =
+		seo ??
+		(title
+			? {
+					title,
+					description: props.data?.generalSettings?.description || null,
+				}
+			: null)
+
 	return (
 		<>
-			<RankMathHead seo={seo} />
+			<RankMathHead seo={pageSeo} />
 
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
@@ -86,8 +94,6 @@ Page.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-// Use generated DocumentNode — fixes Apollo invariant #31
-// (inline gql() string no longer matched the codegen map after SEO fields were added)
 Page.query = GetPageDocument as any
 
 export default Page
