@@ -44,7 +44,6 @@ const DynamicSingleType5 = dynamic(
 )
 
 const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
-	//  LOADING ----------
 	if (props.loading) {
 		return <>Loading...</>
 	}
@@ -52,7 +51,6 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 	const router = useRouter()
 	const IS_PREVIEW = router.pathname === '/preview'
 
-	// START ----------
 	const { isReady, isAuthenticated } = useSelector(
 		(state: RootState) => state.viewer.authorizedUser,
 	)
@@ -71,17 +69,25 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 
 	const _post: any = props.data?.post || {}
 
-	// Rank Math SEO from GraphQL (requires codegen after seo fields are in fragments)
-	// Fallback to post title/excerpt so meta is never empty
+	// Prefer Rank Math from GraphQL; safe fallback if seo is missing
+	const siteUrl = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+	const rankMathFromApi = (props.data as any)?.post?.seo ?? null
 	const rankMathSeo =
-		(props.data as any)?.post?.seo ??
-		(_post?.title || _post?.excerpt
+		rankMathFromApi ||
+		(_post?.title
 			? {
-					title: _post.title,
-					description: _post.excerpt?.replace(/<[^>]*>?/gm, '') || null,
-					canonicalUrl: _post.uri
-						? `\( {(process.env.NEXT_PUBLIC_URL || '').replace(/\/ \)/, '')}${_post.uri}`
-						: null,
+					title: _post.title as string,
+					description:
+						typeof _post.excerpt === 'string'
+							? _post.excerpt.replace(/<[^>]*>?/gm, '').trim()
+							: null,
+					canonicalUrl:
+						siteUrl && _post.uri ? `\( {siteUrl} \){_post.uri}` : null,
+					openGraph: {
+						title: _post.title as string,
+						type: 'article',
+						url: siteUrl && _post.uri ? `\( {siteUrl} \){_post.uri}` : null,
+					},
 				}
 			: null)
 
@@ -98,7 +104,7 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 		excerpt,
 	} = getPostDataFromPostFragment(_post)
 
-	const {} = useGetPostsNcmazMetaByIds({
+	useGetPostsNcmazMetaByIds({
 		posts: (IS_PREVIEW ? [] : [_post]) as TPostCard[],
 	})
 
@@ -189,8 +195,9 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
 				pageFeaturedImageUrl={featuredImage?.sourceUrl}
-				pageTitle={title}
-				pageDescription={excerpt || ''}
+				{/* Avoid duplicate title/description when RankMathHead is active */}
+				pageTitle={rankMathSeo ? undefined : title}
+				pageDescription={rankMathSeo ? undefined : excerpt || ''}
 				generalSettings={
 					props.data?.generalSettings as NcgeneralSettingsFieldsFragmentFragment
 				}
@@ -244,8 +251,6 @@ Component.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-// Use generated DocumentNode (avoids Apollo #31).
-// After `npm run codegen`, this document must include post.seo for Rank Math.
 Component.query = GetPostSiglePageDocument as any
 
 export default Component
