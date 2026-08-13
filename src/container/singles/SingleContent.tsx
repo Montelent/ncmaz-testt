@@ -9,7 +9,7 @@ import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentB
 import { ArrowUpIcon } from '@heroicons/react/24/solid'
 import {
 	GetPostSiglePageQuery,
-	NcmazFcPostFullFieldsFragment, // ← changed
+	NcmazFcPostFullFieldsFragment,
 } from '@/__generated__/graphql'
 import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment'
 import NcBookmark from '@/components/NcBookmark/NcBookmark'
@@ -55,7 +55,7 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		date,
 		editorBlocks,
 	} = getPostDataFromPostFragment(
-		(post || {}) as unknown as NcmazFcPostFullFieldsFragment, // ← fixed
+		(post || {}) as unknown as NcmazFcPostFullFieldsFragment,
 	)
 	let blocks: (ContentBlock | null)[] = []
 	if (editorBlocks) {
@@ -144,15 +144,21 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 				{/* TAGS */}
 				{tags?.nodes?.length ? (
 					<div className="mx-auto flex max-w-screen-md flex-wrap">
-						{tags.nodes.map((item) => (
-							<Tag
-								hideCount
-								key={item.databaseId}
-								name={'#' + (item.name || '')}
-								uri={item.uri || ''}
-								className="mb-2 me-2 border border-neutral-200 dark:border-neutral-800"
-							/>
-						))}
+						{tags.nodes.map(
+							(item: {
+								databaseId: number
+								name?: string | null
+								uri?: string | null
+							}) => (
+								<Tag
+									hideCount
+									key={item.databaseId}
+									name={'#' + (item.name || '')}
+									uri={item.uri || ''}
+									className="mb-2 me-2 border border-neutral-200 dark:border-neutral-800"
+								/>
+							),
+						)}
 					</div>
 				) : null}
 
@@ -206,7 +212,7 @@ const StickyAction = forwardRef(function (
 	//
 	const { content, databaseId, ncPostMetaData, uri, commentCount } =
 		getPostDataFromPostFragment(
-			(post || {}) as unknown as NcmazFcPostFullFieldsFragment, // ← fixed
+			(post || {}) as unknown as NcmazFcPostFullFieldsFragment,
 		)
 
 	const { postData: musicPlayerPostData } = useMusicPlayer()
