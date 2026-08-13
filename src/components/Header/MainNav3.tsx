@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import AvatarDropdown from './AvatarDropdown'
 import SwitchDarkMode from '../SwitchDarkMode/SwitchDarkMode'
 import Navigation from '../Navigation/Navigation'
 import { MainNav1Props } from './MainNav1'
@@ -13,9 +12,13 @@ const DynamicMenuBar = dynamic(() => import('@/components/MenuBar/MenuBar'), {
 	ssr: false,
 })
 
-export interface MainNav2Props extends MainNav1Props {}
+const AvatarDropdown = dynamic(() => import('./AvatarDropdown'), {
+	ssr: false,
+})
 
-const MainNav2: FC<MainNav2Props> = ({ menuItems, description, title }) => {
+export interface MainNav3Props extends MainNav1Props {}
+
+const MainNav3: FC<MainNav3Props> = ({ menuItems, description, title }) => {
 	return (
 		<div className="nc-MainNav3 relative z-10 border-b border-neutral-200/70 bg-white dark:border-transparent dark:bg-neutral-900">
 			<div className="px-4 xl:container">
@@ -61,4 +64,4 @@ const MainNav2: FC<MainNav2Props> = ({ menuItems, description, title }) => {
 	)
 }
 
-export default MainNav2
+export default MainNav3
