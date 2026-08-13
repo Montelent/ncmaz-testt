@@ -15,7 +15,7 @@ import themeJson from '@/../theme.json'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
 import dynamic from 'next/dynamic'
 
-// Load WPCodeShell only on the client – prevents Apollo invariant 31
+// This is the critical line – loads WPCodeShell only on the client
 const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
 	ssr: false,
 })
