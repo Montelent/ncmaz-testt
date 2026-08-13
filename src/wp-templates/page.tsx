@@ -1,143 +1,267 @@
-import { gql } from '@/__generated__'
-import EntryHeader from '../components/entry-header'
+import { gql } from '../__generated__'
 import {
-	GetPageQuery,
+	GetPostSiglePageQuery,
 	NcgeneralSettingsFieldsFragmentFragment,
+	NcmazFcUserReactionPostActionEnum,
+	NcmazFcUserReactionPostNumberUpdateEnum,
 } from '../__generated__/graphql'
-import { FaustTemplate, flatListToHierarchical } from '@faustwp/core'
-import { FOOTER_LOCATION, PRIMARY_LOCATION } from '@/contains/menu'
+import { FaustTemplate } from '@faustwp/core'
+import SingleContent from '@/container/singles/SingleContent'
+import SingleType1 from '@/container/singles/single/single'
+import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment'
+import { Sidebar } from '@/container/singles/Sidebar'
 import PageLayout from '@/container/PageLayout'
-import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
+import { FOOTER_LOCATION, PRIMARY_LOCATION } from '@/contains/menu'
+import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
+import { NC_MUTATION_UPDATE_USER_REACTION_POST_COUNT } from '@/fragments/mutations'
+import { useMutation } from '@apollo/client'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/stores/store'
+import useGetPostsNcmazMetaByIds from '@/hooks/useGetPostsNcmazMetaByIds'
+import { TPostCard } from '@/components/Card2/Card2'
+import { useRouter } from 'next/router'
+import { TCategoryCardFull } from '@/components/CardCategory1/CardCategory1'
+import SingleTypeAudio from '@/container/singles/single-audio/single-audio'
+import SingleTypeVideo from '@/container/singles/single-video/single-video'
+import SingleTypeGallery from '@/container/singles/single-gallery/single-gallery'
 import RankMathHead from '@/components/RankMathHead'
 
-const Page: FaustTemplate<GetPageQuery> = (props) => {
-	// LOADING ----------
+const DynamicSingleRelatedPosts = dynamic(
+	() => import('@/container/singles/SingleRelatedPosts'),
+)
+const DynamicSingleType2 = dynamic(
+	() => import('../container/singles/single-2/single-2'),
+)
+const DynamicSingleType3 = dynamic(
+	() => import('../container/singles/single-3/single-3'),
+)
+const DynamicSingleType4 = dynamic(
+	() => import('../container/singles/single-4/single-4'),
+)
+const DynamicSingleType5 = dynamic(
+	() => import('../container/singles/single-5/single-5'),
+)
+
+const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
+	//  LOADING ----------
 	if (props.loading) {
 		return <>Loading...</>
 	}
 
-	// for this page
-	const { title, editorBlocks, featuredImage, ncPageMeta, seo } =
-		(props.data?.page as any) || {}
+	const router = useRouter()
+	const IS_PREVIEW = router.pathname === '/preview'
 
-	const isGutenbergPage =
-		!!props.__SEED_NODE__?.isFrontPage || ncPageMeta?.isFullWithPage
+	// START ----------
+	const { isReady, isAuthenticated } = useSelector(
+		(state: RootState) => state.viewer.authorizedUser,
+	)
+	const { viewer } = useSelector((state: RootState) => state.viewer)
+	const [isUpdateViewCount, setIsUpdateViewCount] = useState(false)
 
-	const blocks = flatListToHierarchical(editorBlocks as any, {
-		idKey: 'clientId',
-		parentKey: 'parentClientId',
+	useEffect(() => {
+		const timeOutUpdateViewCount = setTimeout(() => {
+			setIsUpdateViewCount(true)
+		}, 5000)
+
+		return () => {
+			clearTimeout(timeOutUpdateViewCount)
+		}
+	}, [])
+
+	const _post = (props.data?.post as any) || {}
+	const rankMathSeo = _post.seo
+
+	// console.log('🚀 \~ file: single.tsx \~ line 68 \~ Component \~ _post', _post)
+
+	const _relatedPosts = (props.data?.posts?.nodes as TPostCard[]) || []
+	const _top10Categories =
+		(props.data?.categories?.nodes as TCategoryCardFull[]) || []
+
+	const {
+		title,
+		ncPostMetaData,
+		postFormats,
+		featuredImage,
+		databaseId,
+		excerpt,
+	} = getPostDataFromPostFragment(_post)
+
+	//
+	const {} = useGetPostsNcmazMetaByIds({
+		posts: (IS_PREVIEW ? [] : [_post]) as TPostCard[],
 	})
+	//
+
+	// Query update post view count
+	const [handleUpdateReactionCount, { reset }] = useMutation(
+		NC_MUTATION_UPDATE_USER_REACTION_POST_COUNT,
+		{
+			onCompleted: (data) => {
+				reset()
+			},
+		},
+	)
+
+	// update view count
+	useEffect(() => {
+		if (!isReady || IS_PREVIEW || !isUpdateViewCount) {
+			return
+		}
+
+		// user chua dang nhap, va update view count voi user la null
+		if (isAuthenticated === false) {
+			handleUpdateReactionCount({
+				variables: {
+					post_id: databaseId,
+					reaction: NcmazFcUserReactionPostActionEnum.View,
+					number: NcmazFcUserReactionPostNumberUpdateEnum.Add_1,
+				},
+			})
+			return
+		}
+
+		// user da dang nhap, va luc nay viewer dang fetch.
+		if (!viewer?.databaseId) {
+			return
+		}
+
+		// khi viewer fetch xong, luc nay viewer da co databaseId, va se update view count voi user la viewer
+		handleUpdateReactionCount({
+			variables: {
+				post_id: databaseId,
+				reaction: NcmazFcUserReactionPostActionEnum.View,
+				number: NcmazFcUserReactionPostNumberUpdateEnum.Add_1,
+				user_id: viewer?.databaseId,
+			},
+		})
+	}, [
+		databaseId,
+		isReady,
+		isAuthenticated,
+		viewer?.databaseId,
+		IS_PREVIEW,
+		isUpdateViewCount,
+	])
+
+	const renderHeaderType = () => {
+		const pData = { ...(_post || {}) }
+
+		if (postFormats === 'audio') {
+			return <SingleTypeAudio post={pData} />
+		}
+		if (postFormats === 'video') {
+			return <SingleTypeVideo post={pData} />
+		}
+		if (postFormats === 'gallery') {
+			return <SingleTypeGallery post={pData} />
+		}
+
+		if (ncPostMetaData?.template?.[0] === 'style2') {
+			return <DynamicSingleType2 post={pData} />
+		}
+		if (ncPostMetaData?.template?.[0] === 'style3') {
+			return <DynamicSingleType3 post={pData} />
+		}
+		if (ncPostMetaData?.template?.[0] === 'style4') {
+			return <DynamicSingleType4 post={pData} />
+		}
+		if (ncPostMetaData?.template?.[0] === 'style5') {
+			return <DynamicSingleType5 post={pData} />
+		}
+		return (
+			<SingleType1
+				showRightSidebar={!!ncPostMetaData?.showRightSidebar}
+				post={pData}
+			/>
+		)
+	}
 
 	return (
 		<>
-			<RankMathHead seo={seo} />
+			<RankMathHead seo={rankMathSeo} />
 
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
-				pageFeaturedImageUrl={featuredImage?.node?.sourceUrl}
+				pageFeaturedImageUrl={featuredImage?.sourceUrl}
 				pageTitle={title}
+				pageDescription={excerpt || ''}
 				generalSettings={
 					props.data?.generalSettings as NcgeneralSettingsFieldsFragmentFragment
 				}
 			>
-				<div className="nc-BgGlassmorphism absolute inset-x-0 z-[-1] flex min-h-0 overflow-hidden py-24 pl-20 md:top-10 xl:top-20">
-					<span className="block h-72 w-72 rounded-full bg-[#ef233c] opacity-10 mix-blend-multiply blur-3xl filter lg:h-96 lg:w-96"></span>
-					<span className="nc-animation-delay-2000 -ml-20 mt-40 block h-72 w-72 rounded-full bg-[#04868b] opacity-10 mix-blend-multiply blur-3xl filter lg:h-96 lg:w-96"></span>
-				</div>
-				<div
-					className={`container ${
-						isGutenbergPage ? '' : 'pb-20 pt-5 sm:pt-10'
-					}`}
-				>
-					<main
-						className={`prose mx-auto lg:prose-lg dark:prose-invert ${
-							isGutenbergPage ? 'max-w-none' : ''
-						}`}
-					>
-						{isGutenbergPage && (
-							<h1 className="sr-only">
-								{/* @ts-ignore */}
-								{props.data?.generalSettings?.title || title || ''}
-							</h1>
-						)}
+				{ncPostMetaData?.showRightSidebar ? (
+					<div>
+						<div className={`relative`}>
+							{renderHeaderType()}
 
-						{title && !isGutenbergPage && (
-							<>
-								<EntryHeader title={title} />
-								<hr />
-							</>
-						)}
+							<div className="container my-10 flex flex-col lg:flex-row">
+								<div className="w-full lg:w-3/5 xl:w-2/3 xl:pe-20">
+									<SingleContent post={_post} />
+								</div>
+								<div className="mt-12 w-full lg:mt-0 lg:w-2/5 lg:ps-10 xl:w-1/3 xl:ps-0">
+									<Sidebar categories={_top10Categories} />
+								</div>
+							</div>
 
-						<MyWordPressBlockViewer blocks={blocks} />
-					</main>
-				</div>
+							{/* RELATED POSTS */}
+							<DynamicSingleRelatedPosts
+								posts={_relatedPosts}
+								postDatabaseId={databaseId}
+							/>
+						</div>
+					</div>
+				) : (
+					<div>
+						{renderHeaderType()}
+
+						<div className="container mt-10">
+							{/* SINGLE MAIN CONTENT */}
+							<SingleContent post={_post} />
+						</div>
+
+						{/* RELATED POSTS */}
+						<DynamicSingleRelatedPosts
+							posts={_relatedPosts}
+							postDatabaseId={databaseId}
+						/>
+					</div>
+				)}
 			</PageLayout>
 		</>
 	)
 }
 
-Page.variables = ({ databaseId }, ctx) => {
+Component.variables = ({ databaseId }, ctx) => {
 	return {
 		databaseId,
+		post_databaseId: Number(databaseId || 0),
 		asPreview: ctx?.asPreview,
 		headerLocation: PRIMARY_LOCATION,
 		footerLocation: FOOTER_LOCATION,
 	}
 }
 
-// Note***: tat ca cac query trong cac page deu phai co generalSettings, no duoc su dung o compoent Wrap
-Page.query = gql(`
-  query GetPage($databaseId: ID!, $asPreview: Boolean = false, $headerLocation: MenuLocationEnum!, $footerLocation: MenuLocationEnum!) {
-    page(id: $databaseId, idType: DATABASE_ID, asPreview: $asPreview) {
-      title
-	  seo {
-  title
-  description
-  canonicalUrl
-  robots
-  jsonLd {
-    raw
-  }
-  openGraph {
-    title
-    description
-    url
-    type
-    siteName
-    twitterMeta {
-      card
+Component.query = gql(`
+  query GetPostSiglePage($databaseId: ID!, $post_databaseId: Int,$asPreview: Boolean = false, $headerLocation: MenuLocationEnum!, $footerLocation: MenuLocationEnum!) {
+    post(id: $databaseId, idType: DATABASE_ID, asPreview: $asPreview) {
+		...NcmazFcPostFullVsEditorBlocksNoContentFields
     }
-  }
-}
-
-      ncPageMeta {
-        isFullWithPage
-      }
-      featuredImage {
-        node {
-          altText
-          sourceUrl
-        }
-      }
-      editorBlocks(flat: true) {
-        __typename
-        renderedHtml
-        clientId
-        parentClientId
-        ...NcmazFaustBlockMagazineFragment
-        ...NcmazFaustBlockTermsFragment
-        ...NcmazFaustBlockCtaFragment
-        ...NcmazFaustBlockGroupFragment
-        ...CoreColumnsFragment
-        ...CoreColumnFragment
+    posts(where: {isRelatedOfPostId:$post_databaseId}) {
+      nodes {
+      ...PostCardFieldsNOTNcmazMEDIA
       }
     }
-    # common query for all page 
+    categories(first:10, where: { orderby: COUNT, order: DESC }) {
+      nodes {
+        ...NcmazFcCategoryFullFieldsFragment
+      }
+    }
     generalSettings {
       ...NcgeneralSettingsFieldsFragment
     }
-    primaryMenuItems: menuItems(where: { location:  $headerLocation  }, first: 80) {
+    primaryMenuItems: menuItems(where: {location:$headerLocation}, first: 80) {
       nodes {
         ...NcPrimaryMenuFieldsFragment
       }
@@ -150,4 +274,4 @@ Page.query = gql(`
   }
 `) as any
 
-export default Page
+export default Component
