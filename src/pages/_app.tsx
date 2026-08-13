@@ -14,7 +14,7 @@ import themeJson from '@/../theme.json'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
 import dynamic from 'next/dynamic'
 
-// Client-only – prevents Apollo invariant 31 during static generation
+// Both must be client-only
 const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
 	ssr: false,
 })
