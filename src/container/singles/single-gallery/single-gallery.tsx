@@ -21,7 +21,7 @@ const SingleTypeGallery: FC<Props> = ({ post }) => {
 		post || {},
 	)
 	let IMAGES_GALLERY =
-		ncmazGalleryImgs.filter((item) => !!item?.sourceUrl) || []
+		ncmazGalleryImgs.filter((item: any) => !!item?.sourceUrl) || []
 	//
 
 	const handleCloseModalImageGallery = () => {
