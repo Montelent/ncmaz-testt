@@ -12,7 +12,7 @@ import { FragmentTypePostFullFields } from '../type'
 
 export interface Props {
 	className?: string
-	post: FragmentTypePostFullFields
+	post: FragmentTypePostFullFields | Record<string, any> | null | undefined
 }
 
 const SingleMetaAction2: FC<Props> = ({ className = '', post }) => {
@@ -53,7 +53,7 @@ const SingleMetaAction2: FC<Props> = ({ className = '', post }) => {
 					<PostActionDropdown
 						containerClassName="h-9 w-9 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
 						iconClass="h-5 w-5"
-						post={post}
+						post={post as any}
 						isSingle
 					/>
 				</div>
