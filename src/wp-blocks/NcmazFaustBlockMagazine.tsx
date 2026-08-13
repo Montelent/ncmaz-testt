@@ -1,7 +1,13 @@
 import { gql } from '@apollo/client'
 import { NcmazFaustBlockMagazineFragmentFragment } from '../__generated__/graphql'
 import { WordPressBlock } from '@faustwp/blocks'
-import NcmazFaustBlockMagazineClient from './NcmazFaustBlockMagazineClient'
+import dynamic from 'next/dynamic'
+
+// Client-only: uses useLazyQuery — must not run during SSG
+const NcmazFaustBlockMagazineClient = dynamic(
+	() => import('./NcmazFaustBlockMagazineClient'),
+	{ ssr: false },
+)
 
 const NcmazFaustBlockMagazine: WordPressBlock<
 	NcmazFaustBlockMagazineFragmentFragment & {
