@@ -27,17 +27,13 @@ const poppins = Poppins({
 	weight: ['300', '400', '500', '600', '700'],
 })
 
-// Fetches active WPCode snippets and places them around whatever this
-// wraps. Must sit inside <FaustProvider> so useQuery has Apollo context.
-// We skip the query during static generation (server) to prevent
-// Apollo invariant #31 on Hostinger / shared hosting builds.
+// Safe during static generation – prevents Apollo invariant #31
 function WPCodeShell({ children }: { children: React.ReactNode }) {
 	const { data, error } = useQuery(WPCODE_SNIPPETS_QUERY, {
-		skip: typeof window === 'undefined', // never run on the server during SSG
+		skip: typeof window === 'undefined', // never run on the server
 		errorPolicy: 'ignore',
 	})
 
-	// If the query was skipped or failed, just render children (no snippets)
 	if (error || !data) {
 		return <>{children}</>
 	}
