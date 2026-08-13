@@ -179,7 +179,7 @@ const Page: FaustPage<{}> = (props) => {
 							isAllowComments: commentStatus === 'open',
 							postFormatsSelected: postFormats,
 							videoUrl: ncmazVideoUrl?.videoUrl || '',
-							objGalleryImgs: ncmazGalleryImgs.reduce((acc, cur, index) => {
+							objGalleryImgs.reduce((acc: Record<string, any>, cur, index) => {
 								return {
 									...acc,
 									[`image${index + 1}`]: {
