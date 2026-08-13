@@ -179,6 +179,8 @@ const Component: FaustTemplate<GetPostSiglePageQuery> = (props) => {
 
 	return (
 		<>
+			<RankMathHead seo={rankMathSeo} />
+
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
 				footerMenuItems={props.data?.footerMenuItems?.nodes || []}
