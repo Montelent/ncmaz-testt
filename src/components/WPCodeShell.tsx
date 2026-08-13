@@ -9,14 +9,18 @@ import {
 	WPCodeFooterSnippets,
 } from '@/components/WPCodeSnippets'
 
-export default function WPCodeShell({ children }: { children: React.ReactNode }) {
+export default function WPCodeShell({
+	children,
+}: {
+	children?: React.ReactNode
+}) {
 	const { data, error } = useQuery(WPCODE_SNIPPETS_QUERY, {
 		errorPolicy: 'ignore',
 		ssr: false,
 	})
 
 	if (error || !data) {
-		return <>{children}</>
+		return <>{children ?? null}</>
 	}
 
 	const snippets = data?.wpcodeSnippets ?? []
@@ -25,7 +29,7 @@ export default function WPCodeShell({ children }: { children: React.ReactNode })
 		<>
 			<WPCodeHeaderSnippets snippets={snippets} />
 			<WPCodeBodyOpenSnippets snippets={snippets} />
-			{children}
+			{children ?? null}
 			<WPCodeFooterSnippets snippets={snippets} />
 		</>
 	)
