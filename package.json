@@ -5,6 +5,7 @@
   "description": "Faust is a framework that aims to make headless WordPress as streamlined as classic WordPress for both developers and publishers.",
   "scripts": {
     "dev": "npm run generate && concurrently \"faust dev\" \"npm run watch-codegen\"",
+    "prebuild": "npm run codegen",
     "build": "faust build",
     "postbuild": "next-sitemap",
     "generate": "faust generatePossibleTypes",
