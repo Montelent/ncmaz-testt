@@ -16,7 +16,9 @@
   },
   "prettier": "@epic-web/config/prettier",
   "dependencies": {
-    "@apollo/client": "^3.13.8",
+    "overrides": {
+  "@apollo/client": "3.13.8"
+    }
     "@faustwp/blocks": "^6.1.5",
     "@faustwp/cli": "^3.3.1",
     "@faustwp/core": "^3.3.2",
