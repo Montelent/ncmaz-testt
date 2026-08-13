@@ -10,7 +10,7 @@ import ControlSettingsDemo from './ControlSettingsDemo'
 import CookiestBoxPopover from '@/components/CookiestBoxPopover'
 import MusicPlayer from '@/components/MusicPlayer/MusicPlayer'
 import { initLocalPostsSavedListFromLocalstored } from '@/stores/localPostSavedList/localPostsSavedListSlice'
-import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/router'
 import { CMSUserMetaResponseData } from '@/pages/api/cms-user-meta/[id]'
 import { addViewerReactionPosts } from '@/stores/viewer/viewerSlice'
 
@@ -21,7 +21,8 @@ export function SiteWrapperChild({
 }) {
 	const { isAuthenticated, isReady, loginUrl, viewer } = useAuth()
 	const dispatch = useDispatch()
-	const pathname = usePathname()
+	const router = useRouter()
+	const pathname = router.asPath
 
 	const [isFirstFetchApis, setIsFirstFetchApis] = useState(false)
 
