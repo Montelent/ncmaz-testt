@@ -22,6 +22,7 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer'
 import { flatListToHierarchical } from '@faustwp/core'
 import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
 import { ContentBlock } from '@faustwp/blocks/dist/mjs/components/WordPressBlocksViewer'
+import { ensureHeadingIds } from '@/utils/headingAnchor'
 
 export interface SingleContentProps {
 	post: GetPostSiglePageQuery['post']
