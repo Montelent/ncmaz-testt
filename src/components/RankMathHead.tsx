@@ -20,18 +20,43 @@ export type RankMathSeo = {
 	} | null
 }
 
+function getFrontend(): string {
+	return (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+}
+
+function getBackend(): string {
+	return (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(/\/$/, '')
+}
+
+/** Page URLs only — never rewrite media/upload URLs */
 function toFrontendUrl(url?: string | null): string | undefined {
 	if (!url) return undefined
-	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
-	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
-		/\/$/,
-		'',
-	)
+	const frontend = getFrontend()
+	const backend = getBackend()
 	if (!frontend || !backend) return url
+
+	// Keep real image/file hosts as-is
+	if (url.includes('/wp-content/')) {
+		return url
+	}
+
 	if (url.startsWith(backend)) {
 		return frontend + url.slice(backend.length)
 	}
 	return url
+}
+
+/** Featured image: always prefer real backend (bd.) URL */
+function resolveImageUrl(imageUrl?: string | null): string {
+	if (!imageUrl) return ''
+	if (imageUrl.includes('/wp-content/') || imageUrl.startsWith('http')) {
+		return imageUrl
+	}
+	const backend = getBackend()
+	if (backend && imageUrl.startsWith('/')) {
+		return backend + imageUrl
+	}
+	return imageUrl
 }
 
 function extractJsonLd(raw?: string | null): string | null {
@@ -55,75 +80,174 @@ function robotsToString(robots?: string | string[] | null): string {
 	return String(robots).toLowerCase()
 }
 
-function isPlaceholderImage(value: unknown): boolean {
-	if (typeof value === 'string') {
-		return (
-			value === 'FEATURED_IMAGE_URL' ||
-			value === 'FEATURE_IMAGE_URL' ||
-			value.includes('FEATURED_IMAGE_URL') ||
-			value.includes('FEATURE_IMAGE_URL')
-		)
-	}
-	if (Array.isArray(value)) {
-		return value.some(isPlaceholderImage)
-	}
-	if (value && typeof value === 'object' && 'url' in value) {
-		return isPlaceholderImage((value as { url?: unknown }).url)
-	}
-	return false
+function isPlaceholder(value: unknown): boolean {
+	if (typeof value !== 'string') return false
+	return (
+		value === 'FEATURED_IMAGE_URL' ||
+		value === 'FEATURE_IMAGE_URL' ||
+		value.includes('FEATURED_IMAGE_URL') ||
+		value.includes('FEATURE_IMAGE_URL')
+	)
 }
 
-/** Fix Rank Math placeholders + rewrite backend domain */
+function fixImageValue(value: unknown, realImage: string): unknown {
+	if (!realImage) {
+		if (isPlaceholder(value)) return undefined
+		if (Array.isArray(value)) {
+			return value
+				.map((v) => fixImageValue(v, realImage))
+				.filter((v) => v !== undefined)
+		}
+		if (value && typeof value === 'object') {
+			const obj = { ...(value as Record<string, unknown>) }
+			if (isPlaceholder(obj.url)) return undefined
+			return obj
+		}
+		return value
+	}
+
+	if (isPlaceholder(value)) return realImage
+
+	if (typeof value === 'string') {
+		if (isPlaceholder(value)) return realImage
+		return value
+	}
+
+	if (Array.isArray(value)) {
+		const mapped = value
+			.map((v) => fixImageValue(v, realImage))
+			.filter((v) => v !== undefined && v !== '')
+		return mapped.length ? mapped : [realImage]
+	}
+
+	if (value && typeof value === 'object') {
+		const obj = { ...(value as Record<string, unknown>) }
+		if (isPlaceholder(obj.url) || !obj.url) {
+			obj.url = realImage
+		}
+		return obj
+	}
+
+	return value
+}
+
+function walkAndFix(node: unknown, realImage: string): unknown {
+	if (Array.isArray(node)) {
+		return node.map((n) => walkAndFix(n, realImage))
+	}
+	if (!node || typeof node !== 'object') {
+		return node
+	}
+
+	const obj = { ...(node as Record<string, unknown>) }
+
+	// Fix image fields (keep bd. upload URLs / realImage)
+	if ('image' in obj) {
+		obj.image = fixImageValue(obj.image, realImage)
+		if (
+			obj.image === undefined ||
+			(Array.isArray(obj.image) && obj.image.length === 0)
+		) {
+			if (realImage) {
+				obj.image = [realImage]
+			} else {
+				delete obj.image
+			}
+		}
+	}
+
+	// Rewrite page URLs only (skips /wp-content/)
+	if (typeof obj.url === 'string' && !obj.url.includes('/wp-content/')) {
+		if (isPlaceholder(obj.url)) {
+			if (realImage) obj.url = realImage
+		} else {
+			const rewritten = toFrontendUrl(obj.url)
+			if (rewritten) obj.url = rewritten
+		}
+	}
+
+	if (typeof obj['@id'] === 'string' && !String(obj['@id']).includes('/wp-content/')) {
+		const rewritten = toFrontendUrl(String(obj['@id']))
+		if (rewritten) obj['@id'] = rewritten
+	}
+
+	for (const key of Object.keys(obj)) {
+		if (key === 'image') continue
+		const val = obj[key]
+		if (val && typeof val === 'object') {
+			obj[key] = walkAndFix(val, realImage)
+		}
+	}
+
+	return obj
+}
+
 function sanitizeJsonLd(
 	jsonText: string,
 	imageUrl?: string | null,
 ): string | null {
-	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
-	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
-		/\/$/,
-		'',
-	)
+	const frontend = getFrontend()
+	const backend = getBackend()
+	const realImage = resolveImageUrl(imageUrl || null)
 
 	let out = jsonText
-	if (frontend && backend) {
-		out = out.split(backend).join(frontend)
-	}
 
-	const realImage = imageUrl || ''
+	// Rewrite backend page URLs to frontend, but NOT upload paths
+	if (frontend && backend) {
+		// Protect upload URLs from domain replace
+		const uploadToken = '___UPLOAD_URL___'
+		const uploads: string[] = []
+		out = out.replace(
+			new RegExp(
+				backend.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+					'/wp-content/[^"\\\\s]*',
+				'g',
+			),
+			(match) => {
+				uploads.push(match)
+				return uploadToken + (uploads.length - 1) + '___'
+			},
+		)
+		out = out.split(backend).join(frontend)
+		uploads.forEach((url, i) => {
+			out = out.split(uploadToken + i + '___').join(url)
+		})
+	}
 
 	if (realImage) {
 		out = out.split('FEATURED_IMAGE_URL').join(realImage)
 		out = out.split('FEATURE_IMAGE_URL').join(realImage)
 		out = out.split('%FEATURED_IMAGE_URL%').join(realImage)
-	} else {
-		out = out.split('"FEATURED_IMAGE_URL"').join('""')
-		out = out.split('"FEATURE_IMAGE_URL"').join('""')
 	}
 
 	try {
-		const data = JSON.parse(out)
-
-		if (realImage && data && Array.isArray(data['@graph'])) {
-			for (const node of data['@graph']) {
-				const types = node['@type']
-				const typeList = Array.isArray(types) ? types : [types]
-				const isArticle = typeList.includes('Article')
-				const isHowTo = typeList.includes('HowTo')
-
-				if ((isArticle || isHowTo) && isPlaceholderImage(node.image)) {
-					if (isHowTo) {
-						node.image = { '@type': 'ImageObject', url: realImage }
-					} else {
-						node.image = [realImage]
-					}
-				}
-			}
-			out = JSON.stringify(data)
+		const data = walkAndFix(JSON.parse(out), realImage)
+		const finalText = JSON.stringify(data)
+		if (!finalText || finalText === 'null' || finalText === '{}') {
+			return null
 		}
-
-		return out
+		if (
+			finalText.includes('FEATURED_IMAGE_URL') ||
+			finalText.includes('FEATURE_IMAGE_URL')
+		) {
+			if (!realImage) return null
+			return finalText
+				.split('FEATURED_IMAGE_URL')
+				.join(realImage)
+				.split('FEATURE_IMAGE_URL')
+				.join(realImage)
+		}
+		return finalText
 	} catch {
-		return out.trim() ? out : null
+		const trimmed = out.trim()
+		if (
+			!trimmed ||
+			trimmed.includes('FEATURED_IMAGE_URL') ||
+			trimmed.includes('FEATURE_IMAGE_URL')
+		) {
+			return null
+		}
+		return trimmed
 	}
 }
 
@@ -142,6 +266,7 @@ export default function RankMathHead({
 
 	const canonical = toFrontendUrl(seo.canonicalUrl)
 	const ogUrl = toFrontendUrl(seo.openGraph?.url) || canonical
+	const ogImage = resolveImageUrl(imageUrl || null)
 
 	const ogType =
 		seo.openGraph?.type === 'article' || seo.openGraph?.type === 'Article'
@@ -173,7 +298,7 @@ export default function RankMathHead({
 					url: ogUrl,
 					type: ogType,
 					siteName: seo.openGraph?.siteName || undefined,
-					images: imageUrl ? [{ url: imageUrl }] : undefined,
+					images: ogImage ? [{ url: ogImage }] : undefined,
 				}}
 				twitter={{
 					cardType:
@@ -183,7 +308,7 @@ export default function RankMathHead({
 				}}
 			/>
 
-			{jsonLdFinal && jsonLdFinal.trim() ? (
+			{jsonLdFinal && jsonLdFinal.trim().length > 2 ? (
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: jsonLdFinal }}
