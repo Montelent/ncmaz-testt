@@ -37,18 +37,106 @@ function toFrontendUrl(url?: string | null): string | undefined {
 function extractJsonLd(raw?: string | null): string | null {
 	if (!raw) return null
 	const trimmed = raw.trim()
+	if (!trimmed) return null
+
 	const match = trimmed.match(
 		/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
 	)
-	if (match?.[1]) return match[1].trim()
-	if (trimmed.startsWith('{') || trimmed.startsWith('[')) return trimmed
-	return null
+	const jsonText = (match?.[1] || trimmed).trim()
+	if (!jsonText || (!jsonText.startsWith('{') && !jsonText.startsWith('['))) {
+		return null
+	}
+	return jsonText
 }
 
 function robotsToString(robots?: string | string[] | null): string {
 	if (!robots) return ''
 	if (Array.isArray(robots)) return robots.join(',').toLowerCase()
 	return String(robots).toLowerCase()
+}
+
+/** Fix Rank Math placeholders + rewrite backend domain */
+function sanitizeJsonLd(
+	jsonText: string,
+	imageUrl?: string | null,
+): string | null {
+	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
+	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
+		/\/$/,
+		'',
+	)
+
+	let out = jsonText
+	if (frontend && backend) {
+		out = out.split(backend).join(frontend)
+	}
+
+	const realImage =
+		imageUrl ||
+		(frontend
+			? null
+			: null)
+
+	// Rank Math sometimes leaves these placeholders in Article / HowTo
+	if (realImage) {
+		out = out
+			.split('FEATURED_IMAGE_URL')
+			.join(realImage)
+			.split('FEATURE_IMAGE_URL')
+			.join(realImage)
+			.split('%FEATURED_IMAGE_URL%')
+			.join(realImage)
+	} else {
+		// Remove placeholder strings so Google does not warn
+		out = out
+			.split('"FEATURED_IMAGE_URL"')
+			.join('""')
+			.split('"FEATURE_IMAGE_URL"')
+			.join('""')
+	}
+
+	try {
+		const data = JSON.parse(out)
+		// If Article.image is still a bad placeholder array, fix with imageUrl
+		if (realImage && data && Array.isArray(data['@graph'])) {
+			for (const node of data['@graph']) {
+				const types = node['@type']
+				const isArticle =
+					types === 'Article' ||
+					(Array.isArray(types) && types.includes('Article'))
+				const isHowTo =
+					types === 'HowTo' ||
+					(Array.isArray(types) && types.includes('HowTo'))
+
+				if (isArticle || isHowTo) {
+					const img = node.image
+					if (
+						img === 'FEATURED_IMAGE_URL' ||
+						img === 'FEATURE_IMAGE_URL' ||
+						(Array.isArray(img) &&
+							img.some(
+								(x: string) =>
+									x === 'FEATURED_IMAGE_URL' || x === 'FEATURE_IMAGE_URL',
+							)) ||
+						(img &&
+							typeof img === 'object' &&
+							(img.url === 'FEATURED_IMAGE_URL' ||
+								img.url === 'FEATURE_IMAGE_URL'))
+					) {
+						node.image =
+							isHowTo
+								? { '@type': 'ImageObject', url: realImage }
+								: [realImage]
+					}
+				}
+			}
+			out = JSON.stringify(data)
+		}
+		return out
+	} catch {
+		// If parse fails but string is non-empty, still output replaced text
+		return out.trim() ? out : null
+	}
 }
 
 export default function RankMathHead({
@@ -73,52 +161,3 @@ export default function RankMathHead({
 			: seo.openGraph?.type === 'website'
 				? 'website'
 				: 'article'
-
-	const twitterCard = (seo.openGraph?.twitterMeta?.card || '').toUpperCase()
-	const jsonLdContent = extractJsonLd(seo.jsonLd?.raw || null)
-
-	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
-	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
-		/\/$/,
-		'',
-	)
-	const jsonLdFinal =
-		jsonLdContent && frontend && backend
-			? jsonLdContent.split(backend).join(frontend)
-			: jsonLdContent
-
-	return (
-		<>
-			<NextSeo
-				title={seo.title || undefined}
-				description={description}
-				canonical={canonical}
-				noindex={robotsStr.includes('noindex')}
-				nofollow={robotsStr.includes('nofollow')}
-				openGraph={{
-					title: seo.openGraph?.title || seo.title || undefined,
-					description:
-						seo.openGraph?.description?.replace(/<[^>]*>?/gm, '').trim() ||
-						description,
-					url: ogUrl,
-					type: ogType,
-					siteName: seo.openGraph?.siteName || undefined,
-					images: imageUrl ? [{ url: imageUrl }] : undefined,
-				}}
-				twitter={{
-					cardType:
-						twitterCard === 'SUMMARY_LARGE_IMAGE'
-							? 'summaryLargeImage'
-							: 'summary',
-				}}
-			/>
-
-			{jsonLdFinal ? (
-				<script
-					type="application/ld+json"
-					dangerouslySetInnerHTML={{ __html: jsonLdFinal }}
-				/>
-			) : null}
-		</>
-	)
-}
