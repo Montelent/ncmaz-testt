@@ -60,7 +60,20 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 	)
 	let blocks: (ContentBlock | null)[] = []
 	if (editorBlocks) {
-		blocks = flatListToHierarchical(editorBlocks as any, {
+		const withHeadingIds = (editorBlocks as any[]).map((block) => {
+			if (
+				block &&
+				block.__typename === 'CoreHeading' &&
+				typeof block.renderedHtml === 'string'
+			) {
+				return {
+					...block,
+					renderedHtml: addHeadingIdsToHtml(block.renderedHtml),
+				}
+			}
+			return block
+		})
+		blocks = flatListToHierarchical(withHeadingIds, {
 			idKey: 'clientId',
 			parentKey: 'parentClientId',
 		})
