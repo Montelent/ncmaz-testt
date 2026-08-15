@@ -257,6 +257,9 @@ Component.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-Component.query = GetPostSiglePageDocument as any
+// Inject Rank Math seo into the generated document (no codegen required)
+Component.query = injectPostSeoIntoQuery(
+	GetPostSiglePageDocument as unknown as DocumentNode,
+) as any
 
 export default Component
