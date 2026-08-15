@@ -101,6 +101,12 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		}
 	}, [])
 
+	useEffect(() => {
+		const root = contentRef.current
+		if (!root) return
+		ensureHeadingIds(root)
+	}, [blocks, post])
+
 	const renderAlert = () => {
 		if (status === 'publish') {
 			return null
