@@ -5,6 +5,7 @@ import PostMeta2 from '@/components/PostMeta2/PostMeta2'
 import SingleMetaAction2 from './SingleMetaAction2'
 import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment'
 import { FragmentTypePostFullFields } from '../type'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export interface SingleHeaderProps {
 	hiddenDesc?: boolean
@@ -22,17 +23,27 @@ const SingleHeader: FC<SingleHeaderProps> = ({
 	const {
 		title,
 		excerpt,
-		ncPostMetaData,
 		categories,
 		commentCount,
 		databaseId,
 		uri,
 	} = getPostDataFromPostFragment(post || {})
 
+	const category = categories?.nodes?.[0]
+	const crumbs = [
+		{ label: 'Home', href: '/' },
+		...(category?.name
+			? [{ label: category.name, href: category.uri || undefined }]
+			: []),
+		{ label: title || 'Article' },
+	]
+
 	return (
 		<>
 			<div className={`nc-SingleHeader ${className}`}>
 				<div className="space-y-4 lg:space-y-5">
+					<Breadcrumbs items={crumbs} className="mb-1" />
+
 					<CategoryBadgeList
 						itemClass="!px-3"
 						categories={categories?.nodes || []}
