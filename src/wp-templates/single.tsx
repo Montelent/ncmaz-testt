@@ -26,6 +26,8 @@ import SingleTypeAudio from '@/container/singles/single-audio/single-audio'
 import SingleTypeVideo from '@/container/singles/single-video/single-video'
 import SingleTypeGallery from '@/container/singles/single-gallery/single-gallery'
 import RankMathHead from '@/components/RankMathHead'
+import { injectPostSeoIntoQuery } from '@/utils/injectPostSeoIntoQuery'
+import type { DocumentNode } from 'graphql'
 
 const DynamicSingleRelatedPosts = dynamic(
 	() => import('@/container/singles/SingleRelatedPosts'),
