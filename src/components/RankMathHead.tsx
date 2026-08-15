@@ -43,7 +43,7 @@ function extractJsonLd(raw?: string | null): string | null {
 		/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
 	)
 	const jsonText = (match?.[1] || trimmed).trim()
-	if (!jsonText || (!jsonText.startsWith('{') && !jsonText.startsWith('['))) {
+	if (!jsonText.startsWith('{') && !jsonText.startsWith('[')) {
 		return null
 	}
 	return jsonText
@@ -53,6 +53,24 @@ function robotsToString(robots?: string | string[] | null): string {
 	if (!robots) return ''
 	if (Array.isArray(robots)) return robots.join(',').toLowerCase()
 	return String(robots).toLowerCase()
+}
+
+function isPlaceholderImage(value: unknown): boolean {
+	if (typeof value === 'string') {
+		return (
+			value === 'FEATURED_IMAGE_URL' ||
+			value === 'FEATURE_IMAGE_URL' ||
+			value.includes('FEATURED_IMAGE_URL') ||
+			value.includes('FEATURE_IMAGE_URL')
+		)
+	}
+	if (Array.isArray(value)) {
+		return value.some(isPlaceholderImage)
+	}
+	if (value && typeof value === 'object' && 'url' in value) {
+		return isPlaceholderImage((value as { url?: unknown }).url)
+	}
+	return false
 }
 
 /** Fix Rank Math placeholders + rewrite backend domain */
@@ -71,70 +89,40 @@ function sanitizeJsonLd(
 		out = out.split(backend).join(frontend)
 	}
 
-	const realImage =
-		imageUrl ||
-		(frontend
-			? null
-			: null)
+	const realImage = imageUrl || ''
 
-	// Rank Math sometimes leaves these placeholders in Article / HowTo
 	if (realImage) {
-		out = out
-			.split('FEATURED_IMAGE_URL')
-			.join(realImage)
-			.split('FEATURE_IMAGE_URL')
-			.join(realImage)
-			.split('%FEATURED_IMAGE_URL%')
-			.join(realImage)
+		out = out.split('FEATURED_IMAGE_URL').join(realImage)
+		out = out.split('FEATURE_IMAGE_URL').join(realImage)
+		out = out.split('%FEATURED_IMAGE_URL%').join(realImage)
 	} else {
-		// Remove placeholder strings so Google does not warn
-		out = out
-			.split('"FEATURED_IMAGE_URL"')
-			.join('""')
-			.split('"FEATURE_IMAGE_URL"')
-			.join('""')
+		out = out.split('"FEATURED_IMAGE_URL"').join('""')
+		out = out.split('"FEATURE_IMAGE_URL"').join('""')
 	}
 
 	try {
 		const data = JSON.parse(out)
-		// If Article.image is still a bad placeholder array, fix with imageUrl
+
 		if (realImage && data && Array.isArray(data['@graph'])) {
 			for (const node of data['@graph']) {
 				const types = node['@type']
-				const isArticle =
-					types === 'Article' ||
-					(Array.isArray(types) && types.includes('Article'))
-				const isHowTo =
-					types === 'HowTo' ||
-					(Array.isArray(types) && types.includes('HowTo'))
+				const typeList = Array.isArray(types) ? types : [types]
+				const isArticle = typeList.includes('Article')
+				const isHowTo = typeList.includes('HowTo')
 
-				if (isArticle || isHowTo) {
-					const img = node.image
-					if (
-						img === 'FEATURED_IMAGE_URL' ||
-						img === 'FEATURE_IMAGE_URL' ||
-						(Array.isArray(img) &&
-							img.some(
-								(x: string) =>
-									x === 'FEATURED_IMAGE_URL' || x === 'FEATURE_IMAGE_URL',
-							)) ||
-						(img &&
-							typeof img === 'object' &&
-							(img.url === 'FEATURED_IMAGE_URL' ||
-								img.url === 'FEATURE_IMAGE_URL'))
-					) {
-						node.image =
-							isHowTo
-								? { '@type': 'ImageObject', url: realImage }
-								: [realImage]
+				if ((isArticle || isHowTo) && isPlaceholderImage(node.image)) {
+					if (isHowTo) {
+						node.image = { '@type': 'ImageObject', url: realImage }
+					} else {
+						node.image = [realImage]
 					}
 				}
 			}
 			out = JSON.stringify(data)
 		}
+
 		return out
 	} catch {
-		// If parse fails but string is non-empty, still output replaced text
 		return out.trim() ? out : null
 	}
 }
@@ -161,3 +149,46 @@ export default function RankMathHead({
 			: seo.openGraph?.type === 'website'
 				? 'website'
 				: 'article'
+
+	const twitterCard = (seo.openGraph?.twitterMeta?.card || '').toUpperCase()
+
+	const extracted = extractJsonLd(seo.jsonLd?.raw || null)
+	const jsonLdFinal = extracted
+		? sanitizeJsonLd(extracted, imageUrl || null)
+		: null
+
+	return (
+		<>
+			<NextSeo
+				title={seo.title || undefined}
+				description={description}
+				canonical={canonical}
+				noindex={robotsStr.includes('noindex')}
+				nofollow={robotsStr.includes('nofollow')}
+				openGraph={{
+					title: seo.openGraph?.title || seo.title || undefined,
+					description:
+						seo.openGraph?.description?.replace(/<[^>]*>?/gm, '').trim() ||
+						description,
+					url: ogUrl,
+					type: ogType,
+					siteName: seo.openGraph?.siteName || undefined,
+					images: imageUrl ? [{ url: imageUrl }] : undefined,
+				}}
+				twitter={{
+					cardType:
+						twitterCard === 'SUMMARY_LARGE_IMAGE'
+							? 'summaryLargeImage'
+							: 'summary',
+				}}
+			/>
+
+			{jsonLdFinal && jsonLdFinal.trim() ? (
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: jsonLdFinal }}
+				/>
+			) : null}
+		</>
+	)
+}
