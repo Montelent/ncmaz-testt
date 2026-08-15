@@ -37,12 +37,10 @@ function toFrontendUrl(url?: string | null): string | undefined {
 function extractJsonLd(raw?: string | null): string | null {
 	if (!raw) return null
 	const trimmed = raw.trim()
-	// Rank Math often returns a full <script type="application/ld+json">...</script>
 	const match = trimmed.match(
 		/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i,
 	)
 	if (match?.[1]) return match[1].trim()
-	// Already pure JSON
 	if (trimmed.startsWith('{') || trimmed.startsWith('[')) return trimmed
 	return null
 }
@@ -79,7 +77,6 @@ export default function RankMathHead({
 	const twitterCard = (seo.openGraph?.twitterMeta?.card || '').toUpperCase()
 	const jsonLdContent = extractJsonLd(seo.jsonLd?.raw || null)
 
-	// Rewrite backend domain inside JSON-LD if present
 	const frontend = (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
 	const backend = (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(
 		/\/$/,
