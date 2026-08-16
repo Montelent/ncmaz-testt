@@ -5,6 +5,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online'
 module.exports = {
 	siteUrl: SITE_URL,
 	generateRobotsTxt: true,
+	// Makes browsers show a styled table instead of raw XML
+	xslUrl: `${SITE_URL}/sitemap.xsl`,
 	exclude: [
 		'/submission',
 		'/dashboard/posts/published',
@@ -29,7 +31,7 @@ module.exports = {
 		additionalSitemaps: [`${SITE_URL}/wordpress-sitemap.xml`],
 	},
 	transform: async (config, path) => {
-		// Google requires W3C Datetime / ISO 8601 for lastmod (NOT "8/15/2026 3:30 PM")
+		// Valid W3C / ISO 8601 lastmod (Google-safe)
 		const lastmod = new Date().toISOString()
 
 		const lowPriorityPaths = ['/contact', '/login', '/sign-up']
@@ -37,9 +39,7 @@ module.exports = {
 		const isHomePage = path === '/'
 
 		let changefreq = 'daily'
-		if (isHomePage) {
-			changefreq = 'daily'
-		} else if (isLowPriority) {
+		if (isLowPriority) {
 			changefreq = 'monthly'
 		}
 
