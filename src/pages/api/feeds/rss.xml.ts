@@ -9,7 +9,10 @@ const FEED_QUERY = gql`
 			description
 			language
 		}
-		posts(first: 50, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
+		posts(
+			first: 50
+			where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
+		) {
 			nodes {
 				title
 				uri
@@ -56,10 +59,10 @@ export default async function handler(
 	res: NextApiResponse,
 ) {
 	try {
-		const siteUrl = (process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online').replace(
-			/\/$/,
-			'',
-		)
+		const siteUrl = (
+			process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online'
+		).replace(/\/$/, '')
+
 		const client = getApolloClient()
 		const { data } = await client.query({
 			query: FEED_QUERY,
@@ -72,39 +75,78 @@ export default async function handler(
 		const posts = data?.posts?.nodes || []
 
 		const items = posts
-			.map((post: any) => {
-				const link = `\( {siteUrl} \){post.uri || ''}`
+			.map((post: {
+				title?: string | null
+				uri?: string | null
+				excerpt?: string | null
+				dateGmt?: string | null
+				author?: { node?: { name?: string | null } | null } | null
+				featuredImage?: { node?: { sourceUrl?: string | null } | null } | null
+			}) => {
+				const link = siteUrl + (post.uri || '')
 				const desc = stripHtml(post.excerpt || '')
-				const img = post.featuredImage?.node?.sourceUrl
-				const enclosure = img
-					? `<enclosure url="${escapeXml(img)}" type="image/jpeg" />`
-					: ''
+				const img = post.featuredImage?.node?.sourceUrl || ''
 
-				return `
-    <item>
-      <title>${escapeXml(post.title || '')}</title>
-      <link>${escapeXml(link)}</link>
-      <guid isPermaLink="true">${escapeXml(link)}</guid>
-      <pubDate>${toRfc822(post.dateGmt)}</pubDate>
-      <description>${escapeXml(desc)}</description>
-      ${post.author?.node?.name ? \`<author>${escapeXml(post.author.node.name)}</author>\` : ''}
-      ${enclosure}
-    </item>`
+				let authorXml = ''
+				if (post.author?.node?.name) {
+					authorXml =
+						'<author>' + escapeXml(post.author.node.name) + '</author>'
+				}
+
+				let enclosureXml = ''
+				if (img) {
+					enclosureXml =
+						'<enclosure url="' + escapeXml(img) + '" type="image/jpeg" />'
+				}
+
+				return (
+					'    <item>\n' +
+					'      <title>' +
+					escapeXml(post.title || '') +
+					'</title>\n' +
+					'      <link>' +
+					escapeXml(link) +
+					'</link>\n' +
+					'      <guid isPermaLink="true">' +
+					escapeXml(link) +
+					'</guid>\n' +
+					'      <pubDate>' +
+					toRfc822(post.dateGmt) +
+					'</pubDate>\n' +
+					'      <description>' +
+					escapeXml(desc) +
+					'</description>\n' +
+					(authorXml ? '      ' + authorXml + '\n' : '') +
+					(enclosureXml ? '      ' + enclosureXml + '\n' : '') +
+					'    </item>'
+				)
 			})
-			.join('')
+			.join('\n')
 
-		const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${escapeXml(title)}</title>
-    <link>${escapeXml(siteUrl)}</link>
-    <description>${escapeXml(description)}</description>
-    <language>en</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${escapeXml(siteUrl)}/api/feeds/rss.xml" rel="self" type="application/rss+xml" />
-    ${items}
-  </channel>
-</rss>`
+		const xml =
+			'<?xml version="1.0" encoding="UTF-8"?>\n' +
+			'<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n' +
+			'  <channel>\n' +
+			'    <title>' +
+			escapeXml(title) +
+			'</title>\n' +
+			'    <link>' +
+			escapeXml(siteUrl) +
+			'</link>\n' +
+			'    <description>' +
+			escapeXml(description) +
+			'</description>\n' +
+			'    <language>en</language>\n' +
+			'    <lastBuildDate>' +
+			new Date().toUTCString() +
+			'</lastBuildDate>\n' +
+			'    <atom:link href="' +
+			escapeXml(siteUrl + '/api/feeds/rss.xml') +
+			'" rel="self" type="application/rss+xml" />\n' +
+			items +
+			'\n' +
+			'  </channel>\n' +
+			'</rss>'
 
 		res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
 		res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate')
