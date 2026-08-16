@@ -229,6 +229,8 @@ export const NC_POST_FULL_VS_EDITOR_BLOCK_NO_CONTENT_FRAGMENT = gql(
 				...NcmazFaustBlockGroupFragment
 				...CoreColumnsFragment
 				...CoreColumnFragment
+				...CoreImageFragment
+				...CoreGalleryFragment
 			}
 			author {
 				node {
