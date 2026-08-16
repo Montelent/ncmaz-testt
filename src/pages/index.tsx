@@ -1,14 +1,19 @@
 import { getWordPressProps, WordPressTemplate } from '@faustwp/core'
+import { GetStaticProps } from 'next'
 import { WordPressTemplateProps } from '../types'
-import { GetServerSideProps } from 'next'
 
 export default function Page(props: WordPressTemplateProps) {
 	return <WordPressTemplate {...props} />
 }
 
 /**
- * SSR for "/" — avoids Apollo invariant #31 during Hostinger static generation.
+ * ISR for homepage — fast TTFB like posts, still refreshes in the background.
+ * revalidate: seconds until a new request may rebuild this page.
  */
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-	return getWordPressProps({ ctx })
+export const getStaticProps: GetStaticProps = async (ctx) => {
+	return getWordPressProps({
+		ctx,
+		// @ts-expect-error Faust passes through Next revalidate
+		revalidate: 300, // 5 minutes — tune 60–600
+	})
 }
