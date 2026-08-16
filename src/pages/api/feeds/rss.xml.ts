@@ -87,7 +87,7 @@ export default async function handler(
       <guid isPermaLink="true">${escapeXml(link)}</guid>
       <pubDate>${toRfc822(post.dateGmt)}</pubDate>
       <description>${escapeXml(desc)}</description>
-      \( {post.author?.node?.name ? `<author> \){escapeXml(post.author.node.name)}</author>` : ''}
+      ${post.author?.node?.name ? \`<author>${escapeXml(post.author.node.name)}</author>\` : ''}
       ${enclosure}
     </item>`
 			})
