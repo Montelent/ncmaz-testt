@@ -15,7 +15,6 @@ import { GoogleAnalytics } from 'nextjs-google-analytics'
 import dynamic from 'next/dynamic'
 import SiteWrapperProvider from '@/container/SiteWrapperProvider'
 
-// Client-only shells (do NOT wrap the page Component)
 const WPCodeShell = dynamic(() => import('@/components/WPCodeShell'), {
 	ssr: false,
 })
@@ -24,10 +23,11 @@ const ClientOnlyUI = dynamic(() => import('@/container/ClientOnlyUI'), {
 	ssr: false,
 })
 
+// Fewer weights = less font download (helps GTmetrix / LCP)
 const poppins = Poppins({
 	subsets: ['latin'],
 	display: 'swap',
-	weight: ['300', '400', '500', '600', '700'],
+	weight: ['400', '600'],
 })
 
 export default function MyApp({ Component, pageProps }: AppProps) {
@@ -35,6 +35,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
 	return (
 		<>
+			{/* strategy: afterInteractive is default in this package */}
 			<GoogleAnalytics trackPageViews />
 
 			<FaustProvider pageProps={pageProps}>
@@ -52,10 +53,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 						`}</style>
 						<NextNProgress color="#818cf8" />
 
-						{/* Page must SSR / SSG under FaustProvider */}
 						<Component {...pageProps} key={router.asPath} />
 
-						{/* Client-only extras */}
 						<WPCodeShell />
 						<ClientOnlyUI
 							__TEMPLATE_QUERY_DATA__={
