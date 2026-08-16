@@ -7,13 +7,12 @@ export default function Page(props: WordPressTemplateProps) {
 }
 
 /**
- * ISR for homepage — fast TTFB like posts, still refreshes in the background.
- * revalidate: seconds until a new request may rebuild this page.
+ * ISR for homepage — cached HTML, refreshes in the background.
+ * revalidate: seconds until the next request may rebuild this page.
  */
 export const getStaticProps: GetStaticProps = async (ctx) => {
 	return getWordPressProps({
 		ctx,
-		// @ts-expect-error Faust passes through Next revalidate
-		revalidate: 300, // 5 minutes — tune 60–600
+		revalidate: 300, // 5 minutes — tune 60–600 if needed
 	})
 }
