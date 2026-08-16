@@ -6,6 +6,9 @@ import CoreColumns from './CoreColumns'
 import CoreColumn from './CoreColumn'
 import CoreHtml from './CoreHtml'
 import CoreFreeform from './CoreFreeform'
+import CoreImage from './CoreImage'
+import CoreGallery from './CoreGallery'
+
 export default {
 	NcmazFaustBlockMagazine,
 	NcmazFaustBlockTerms,
@@ -15,4 +18,6 @@ export default {
 	CoreColumn,
 	CoreHtml,
 	CoreFreeform,
+	CoreImage,
+	CoreGallery,
 }
