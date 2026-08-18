@@ -4,15 +4,15 @@
   "version": "3.1.4",
   "description": "Faust is a framework that aims to make headless WordPress as streamlined as classic WordPress for both developers and publishers.",
   "scripts": {
-  "dev": "npm run generate && concurrently \"faust dev\" \"npm run watch-codegen\"",
-  "build": "faust build",
-  "postbuild": "next-sitemap",
-  "generate": "faust generatePossibleTypes",
-  "start": "faust start",
-  "codegen": "graphql-codegen",
-  "watch-codegen": "graphql-codegen -w",
-  "wc": "graphql-codegen -w",
-  "tsc": "tsc"
+    "dev": "npm run generate && concurrently \"faust dev\" \"npm run watch-codegen\"",
+    "build": "faust build",
+    "postbuild": "next-sitemap",
+    "generate": "faust generatePossibleTypes",
+    "start": "faust start",
+    "codegen": "graphql-codegen",
+    "watch-codegen": "graphql-codegen -w",
+    "wc": "graphql-codegen -w",
+    "tsc": "tsc"
   },
   "prettier": "@epic-web/config/prettier",
   "dependencies": {
@@ -88,11 +88,13 @@
     "zustand": {
       "use-sync-external-store": "^1.6.0"
     },
-    "use-sync-external-store": "^1.6.0"
+    "use-sync-external-store": "^1.6.0",
+    "immutable": "3.8.3"
   },
   "resolutions": {
     "babel/runtime": "7.27.0",
     "zustand": "^4.5.6",
-    "use-sync-external-store": "^1.6.0"
+    "use-sync-external-store": "^1.6.0",
+    "immutable": "3.8.3"
   }
 }
