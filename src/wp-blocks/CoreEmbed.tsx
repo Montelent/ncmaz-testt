@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useId, useRef } from 'react'
 import { gql } from '@apollo/client'
 
 function asObject(attrs: unknown): Record<string, any> {
@@ -24,13 +24,13 @@ function extractUrl(html: string, attrs: Record<string, any>): string {
 
 	const href = html.match(/href=["']([^"']+)["']/i)
 	if (href?.[1] && /youtu|vimeo|twitter\.com|x\.com/i.test(href[1])) {
-		return href[1]
+		return href[1].trim()
 	}
 
 	const bare = html.match(
 		/https?:\/\/(?:www\.)?(?:youtube\.com\/[^\s"'<>]+|youtu\.be\/[^\s"'<>]+|vimeo\.com\/[^\s"'<>]+|twitter\.com\/[^\s"'<>]+|x\.com\/[^\s"'<>]+)/i,
 	)
-	return bare?.[0] || ''
+	return bare?.[0]?.trim() || ''
 }
 
 function getYoutubeId(url: string): string | null {
@@ -61,6 +61,93 @@ function getYoutubeId(url: string): string | null {
 function getVimeoId(url: string): string | null {
 	const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
 	return m?.[1] || null
+}
+
+function isTwitterUrl(url: string): boolean {
+	return /(?:twitter\.com|x\.com)\//i.test(url)
+}
+
+/** Normalize status URLs so widgets.js can render them */
+function normalizeTwitterUrl(url: string): string {
+	try {
+		const u = new URL(url)
+		// https://twitter.com/i/status/ID or x.com/i/status/ID
+		const parts = u.pathname.split('/').filter(Boolean)
+		const statusIdx = parts.indexOf('status')
+		if (statusIdx >= 0 && parts[statusIdx + 1]) {
+			const id = parts[statusIdx + 1].replace(/[^0-9]/g, '')
+			if (id) return `https://twitter.com/i/status/${id}`
+		}
+		return url.replace('https://x.com/', 'https://twitter.com/')
+	} catch {
+		return url
+	}
+}
+
+declare global {
+	interface Window {
+		twts?: {
+			widgets?: {
+				load?: (el?: HTMLElement) => void
+			}
+		}
+	}
+}
+
+function loadTwitterWidgets(container?: HTMLElement | null) {
+	if (typeof window === 'undefined') return
+
+	const run = () => {
+		try {
+			window.twttr?.widgets?.load?.(container || undefined)
+		} catch {
+			/* ignore */
+		}
+	}
+
+	if (window.twttr?.widgets?.load) {
+		run()
+		return
+	}
+
+	const existing = document.querySelector(
+		'script[src="https://platform.twitter.com/widgets.js"]',
+	) as HTMLScriptElement | null
+
+	if (existing) {
+		existing.addEventListener('load', run)
+		// script may already be loaded
+		run()
+		return
+	}
+
+	const script = document.createElement('script')
+	script.src = 'https://platform.twitter.com/widgets.js'
+	script.async = true
+	script.charset = 'utf-8'
+	script.onload = run
+	document.body.appendChild(script)
+}
+
+function TwitterEmbed({ url, className }: { url: string; className: string }) {
+	const ref = useRef<HTMLDivElement>(null)
+	const normalized = normalizeTwitterUrl(url)
+
+	useEffect(() => {
+		loadTwitterWidgets(ref.current)
+		const t = window.setTimeout(() => loadTwitterWidgets(ref.current), 500)
+		return () => window.clearTimeout(t)
+	}, [normalized])
+
+	return (
+		<figure className={className + ' is-provider-twitter'}>
+			<div ref={ref} className="wp-block-embed__wrapper flex justify-center">
+				<blockquote className="twitter-tweet" data-dnt="true">
+					<a href={normalized}>{normalized}</a>
+				</blockquote>
+			</div>
+		</figure>
+	)
 }
 
 const wrapperStyle: React.CSSProperties = {
@@ -97,7 +184,7 @@ const CoreEmbed = (props: any) => {
 		.filter(Boolean)
 		.join(' ')
 
-	// WP already gave a real embed
+	// WP already gave a real iframe embed
 	if (renderedHtml && /<iframe/i.test(renderedHtml)) {
 		return (
 			<figure
@@ -105,6 +192,11 @@ const CoreEmbed = (props: any) => {
 				dangerouslySetInnerHTML={{ __html: renderedHtml }}
 			/>
 		)
+	}
+
+	// WP already gave a twitter blockquote
+	if (renderedHtml && /twitter-tweet/i.test(renderedHtml)) {
+		return <TwitterEmbedFromHtml html={renderedHtml} className={className} />
 	}
 
 	const youtubeId = getYoutubeId(url)
@@ -124,7 +216,7 @@ const CoreEmbed = (props: any) => {
 						/>
 					</div>
 					{attrs.caption ? (
-						<figcaption className="mt-2 text-sm text-neutral-500">
+						<figcaption className="mt-2 text-center text-sm text-neutral-500">
 							{attrs.caption}
 						</figcaption>
 					) : null}
@@ -154,7 +246,15 @@ const CoreEmbed = (props: any) => {
 		}
 	}
 
-	// Visible fallback — never disappear silently
+	// X / Twitter — full widget embed
+	if (
+		provider === 'twitter' ||
+		provider === 'x' ||
+		isTwitterUrl(url)
+	) {
+		return <TwitterEmbed url={url} className={className} />
+	}
+
 	if (url) {
 		return (
 			<figure className={className}>
@@ -181,16 +281,33 @@ const CoreEmbed = (props: any) => {
 		)
 	}
 
-	// Debug-friendly placeholder so you can see the block is mounting
-	if (process.env.NODE_ENV === 'development') {
-		return (
-			<figure className={className}>
-				<p className="text-sm text-red-500">Embed block: no URL found</p>
-			</figure>
-		)
-	}
-
 	return null
+}
+
+function TwitterEmbedFromHtml({
+	html,
+	className,
+}: {
+	html: string
+	className: string
+}) {
+	const ref = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		loadTwitterWidgets(ref.current)
+		const t = window.setTimeout(() => loadTwitterWidgets(ref.current), 500)
+		return () => window.clearTimeout(t)
+	}, [html])
+
+	return (
+		<figure className={className + ' is-provider-twitter'}>
+			<div
+				ref={ref}
+				className="wp-block-embed__wrapper flex justify-center"
+				dangerouslySetInnerHTML={{ __html: html }}
+			/>
+		</figure>
+	)
 }
 
 export const CoreEmbedFragments = {
