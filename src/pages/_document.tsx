@@ -1,9 +1,11 @@
 import { NC_SITE_SETTINGS } from '@/contains/site-settings'
 import NextDocument, { Html, Head, Main, NextScript } from 'next/document'
 
-const FAVICON_VERSION = 4
+const FAVICON_VERSION = 5
 const SITE_URL = process.env.NEXT_PUBLIC_URL
-const SITE_TITLE = NC_SITE_SETTINGS.site_info?.site_title
+const SITE_TITLE =
+	NC_SITE_SETTINGS.site_info?.site_title || 'SammyGuru'
+const APP_NAME = 'SammyGuru'
 
 function v(href: string) {
 	return `${href}?v=${FAVICON_VERSION}`
@@ -66,8 +68,8 @@ export default class Document extends NextDocument {
 						color="#38bdf8"
 					/>
 					<link rel="shortcut icon" href={v('/favicons/favicon.ico')} />
-					<meta name="apple-mobile-web-app-title" content="Ncmaz Nextjs" />
-					<meta name="application-name" content="Ncmaz Nextjs" />
+					<meta name="apple-mobile-web-app-title" content={APP_NAME} />
+					<meta name="application-name" content={APP_NAME} />
 					<meta name="theme-color" content="#172A53" />
 					<script
 						dangerouslySetInnerHTML={{
