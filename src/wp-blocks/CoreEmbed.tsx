@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useId, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { gql } from '@apollo/client'
 
 function asObject(attrs: unknown): Record<string, any> {
@@ -67,11 +67,9 @@ function isTwitterUrl(url: string): boolean {
 	return /(?:twitter\.com|x\.com)\//i.test(url)
 }
 
-/** Normalize status URLs so widgets.js can render them */
 function normalizeTwitterUrl(url: string): string {
 	try {
 		const u = new URL(url)
-		// https://twitter.com/i/status/ID or x.com/i/status/ID
 		const parts = u.pathname.split('/').filter(Boolean)
 		const statusIdx = parts.indexOf('status')
 		if (statusIdx >= 0 && parts[statusIdx + 1]) {
@@ -86,7 +84,7 @@ function normalizeTwitterUrl(url: string): string {
 
 declare global {
 	interface Window {
-		twts?: {
+		twttr?: {
 			widgets?: {
 				load?: (el?: HTMLElement) => void
 			}
@@ -116,7 +114,6 @@ function loadTwitterWidgets(container?: HTMLElement | null) {
 
 	if (existing) {
 		existing.addEventListener('load', run)
-		// script may already be loaded
 		run()
 		return
 	}
@@ -146,6 +143,32 @@ function TwitterEmbed({ url, className }: { url: string; className: string }) {
 					<a href={normalized}>{normalized}</a>
 				</blockquote>
 			</div>
+		</figure>
+	)
+}
+
+function TwitterEmbedFromHtml({
+	html,
+	className,
+}: {
+	html: string
+	className: string
+}) {
+	const ref = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		loadTwitterWidgets(ref.current)
+		const t = window.setTimeout(() => loadTwitterWidgets(ref.current), 500)
+		return () => window.clearTimeout(t)
+	}, [html])
+
+	return (
+		<figure className={className + ' is-provider-twitter'}>
+			<div
+				ref={ref}
+				className="wp-block-embed__wrapper flex justify-center"
+				dangerouslySetInnerHTML={{ __html: html }}
+			/>
 		</figure>
 	)
 }
@@ -184,7 +207,6 @@ const CoreEmbed = (props: any) => {
 		.filter(Boolean)
 		.join(' ')
 
-	// WP already gave a real iframe embed
 	if (renderedHtml && /<iframe/i.test(renderedHtml)) {
 		return (
 			<figure
@@ -194,7 +216,6 @@ const CoreEmbed = (props: any) => {
 		)
 	}
 
-	// WP already gave a twitter blockquote
 	if (renderedHtml && /twitter-tweet/i.test(renderedHtml)) {
 		return <TwitterEmbedFromHtml html={renderedHtml} className={className} />
 	}
@@ -246,12 +267,7 @@ const CoreEmbed = (props: any) => {
 		}
 	}
 
-	// X / Twitter — full widget embed
-	if (
-		provider === 'twitter' ||
-		provider === 'x' ||
-		isTwitterUrl(url)
-	) {
+	if (provider === 'twitter' || provider === 'x' || isTwitterUrl(url)) {
 		return <TwitterEmbed url={url} className={className} />
 	}
 
@@ -282,32 +298,6 @@ const CoreEmbed = (props: any) => {
 	}
 
 	return null
-}
-
-function TwitterEmbedFromHtml({
-	html,
-	className,
-}: {
-	html: string
-	className: string
-}) {
-	const ref = useRef<HTMLDivElement>(null)
-
-	useEffect(() => {
-		loadTwitterWidgets(ref.current)
-		const t = window.setTimeout(() => loadTwitterWidgets(ref.current), 500)
-		return () => window.clearTimeout(t)
-	}, [html])
-
-	return (
-		<figure className={className + ' is-provider-twitter'}>
-			<div
-				ref={ref}
-				className="wp-block-embed__wrapper flex justify-center"
-				dangerouslySetInnerHTML={{ __html: html }}
-			/>
-		</figure>
-	)
 }
 
 export const CoreEmbedFragments = {
