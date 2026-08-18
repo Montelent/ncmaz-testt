@@ -8,6 +8,7 @@ import CoreHtml from './CoreHtml'
 import CoreFreeform from './CoreFreeform'
 import CoreImage from './CoreImage'
 import CoreGallery from './CoreGallery'
+import CoreEmbed from './CoreEmbed'
 
 export default {
 	NcmazFaustBlockMagazine,
@@ -20,4 +21,5 @@ export default {
 	CoreFreeform,
 	CoreImage,
 	CoreGallery,
+	CoreEmbed,
 }
