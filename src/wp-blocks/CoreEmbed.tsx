@@ -1,18 +1,34 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React from 'react'
 import { gql } from '@apollo/client'
 
-function extractUrlFromHtml(html: string): string {
+function asObject(attrs: unknown): Record<string, any> {
+	if (!attrs) return {}
+	if (typeof attrs === 'string') {
+		try {
+			return JSON.parse(attrs)
+		} catch {
+			return {}
+		}
+	}
+	if (typeof attrs === 'object') return attrs as Record<string, any>
+	return {}
+}
+
+function extractUrl(html: string, attrs: Record<string, any>): string {
+	const direct = attrs.url || attrs.href || ''
+	if (direct) return String(direct).trim()
+
 	if (!html) return ''
-	// href first
+
 	const href = html.match(/href=["']([^"']+)["']/i)
 	if (href?.[1] && /youtu|vimeo|twitter\.com|x\.com/i.test(href[1])) {
 		return href[1]
 	}
-	// bare URL in text
+
 	const bare = html.match(
-		/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?[^\s"'<]+|youtu\.be\/[^\s"'<]+|vimeo\.com\/[^\s"'<]+|twitter\.com\/[^\s"'<]+|x\.com\/[^\s"'<]+)/i,
+		/https?:\/\/(?:www\.)?(?:youtube\.com\/[^\s"'<>]+|youtu\.be\/[^\s"'<>]+|vimeo\.com\/[^\s"'<>]+|twitter\.com\/[^\s"'<>]+|x\.com\/[^\s"'<>]+)/i,
 	)
 	return bare?.[0] || ''
 }
@@ -27,11 +43,11 @@ function getYoutubeId(url: string): string | null {
 		if (u.hostname.includes('youtube.com')) {
 			const v = u.searchParams.get('v')
 			if (v) return v
-			const parts = u.pathname.split('/')
-			const embedIdx = parts.indexOf('embed')
-			if (embedIdx >= 0 && parts[embedIdx + 1]) return parts[embedIdx + 1]
-			const shortsIdx = parts.indexOf('shorts')
-			if (shortsIdx >= 0 && parts[shortsIdx + 1]) return parts[shortsIdx + 1]
+			const parts = u.pathname.split('/').filter(Boolean)
+			const embed = parts.indexOf('embed')
+			if (embed >= 0 && parts[embed + 1]) return parts[embed + 1]
+			const shorts = parts.indexOf('shorts')
+			if (shorts >= 0 && parts[shorts + 1]) return parts[shorts + 1]
 		}
 	} catch {
 		/* ignore */
@@ -47,63 +63,42 @@ function getVimeoId(url: string): string | null {
 	return m?.[1] || null
 }
 
-function YoutubeFrame({ id, title }: { id: string; title?: string }) {
-	return (
-		<div className="wp-block-embed__wrapper relative aspect-video w-full overflow-hidden rounded-xl">
-			<iframe
-				title={title || 'YouTube video'}
-				src={`https://www.youtube-nocookie.com/embed/${id}`}
-				className="absolute inset-0 h-full w-full border-0"
-				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-				allowFullScreen
-				loading="lazy"
-			/>
-		</div>
-	)
+const wrapperStyle: React.CSSProperties = {
+	position: 'relative',
+	width: '100%',
+	paddingBottom: '56.25%',
+	height: 0,
+	overflow: 'hidden',
+	borderRadius: 12,
+	background: '#000',
 }
 
-function VimeoFrame({ id, title }: { id: string; title?: string }) {
-	return (
-		<div className="wp-block-embed__wrapper relative aspect-video w-full overflow-hidden rounded-xl">
-			<iframe
-				title={title || 'Vimeo video'}
-				src={`https://player.vimeo.com/video/${id}`}
-				className="absolute inset-0 h-full w-full border-0"
-				allow="autoplay; fullscreen; picture-in-picture"
-				allowFullScreen
-				loading="lazy"
-			/>
-		</div>
-	)
+const iframeStyle: React.CSSProperties = {
+	position: 'absolute',
+	top: 0,
+	left: 0,
+	width: '100%',
+	height: '100%',
+	border: 0,
 }
 
 const CoreEmbed = (props: any) => {
-	const attrs = props?.attributes || {}
+	const attrs = asObject(props?.attributes)
 	const renderedHtml: string = props?.renderedHtml || ''
+	const url = extractUrl(renderedHtml, attrs)
+	const provider = String(attrs.providerNameSlug || '').toLowerCase()
 
-	const url: string = useMemo(() => {
-		return (
-			attrs.url ||
-			attrs.href ||
-			extractUrlFromHtml(renderedHtml) ||
-			''
-		)
-	}, [attrs.url, attrs.href, renderedHtml])
-
-	const provider = (attrs.providerNameSlug || '').toLowerCase()
 	const className = [
 		'wp-block-embed',
+		'my-6',
 		attrs.className,
 		attrs.cssClassName,
 	]
 		.filter(Boolean)
 		.join(' ')
 
-	const youtubeId = useMemo(() => getYoutubeId(url), [url])
-	const vimeoId = useMemo(() => getVimeoId(url), [url])
-
-	// If WP already sent a real iframe, use it
-	if (renderedHtml.includes('<iframe')) {
+	// WP already gave a real embed
+	if (renderedHtml && /<iframe/i.test(renderedHtml)) {
 		return (
 			<figure
 				className={className}
@@ -112,14 +107,24 @@ const CoreEmbed = (props: any) => {
 		)
 	}
 
+	const youtubeId = getYoutubeId(url)
 	if (youtubeId || provider === 'youtube') {
 		const id = youtubeId || getYoutubeId(url)
 		if (id) {
 			return (
 				<figure className={className + ' is-type-video is-provider-youtube'}>
-					<YoutubeFrame id={id} title={attrs.title} />
+					<div className="wp-block-embed__wrapper" style={wrapperStyle}>
+						<iframe
+							title={attrs.title || 'YouTube video'}
+							src={`https://www.youtube.com/embed/${id}`}
+							style={iframeStyle}
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+							allowFullScreen
+							loading="lazy"
+						/>
+					</div>
 					{attrs.caption ? (
-						<figcaption className="wp-element-caption">
+						<figcaption className="mt-2 text-sm text-neutral-500">
 							{attrs.caption}
 						</figcaption>
 					) : null}
@@ -128,56 +133,41 @@ const CoreEmbed = (props: any) => {
 		}
 	}
 
+	const vimeoId = getVimeoId(url)
 	if (vimeoId || provider === 'vimeo') {
 		const id = vimeoId || getVimeoId(url)
 		if (id) {
 			return (
 				<figure className={className + ' is-type-video is-provider-vimeo'}>
-					<VimeoFrame id={id} title={attrs.title} />
-					{attrs.caption ? (
-						<figcaption className="wp-element-caption">
-							{attrs.caption}
-						</figcaption>
-					) : null}
+					<div className="wp-block-embed__wrapper" style={wrapperStyle}>
+						<iframe
+							title={attrs.title || 'Vimeo video'}
+							src={`https://player.vimeo.com/video/${id}`}
+							style={iframeStyle}
+							allow="autoplay; fullscreen; picture-in-picture"
+							allowFullScreen
+							loading="lazy"
+						/>
+					</div>
 				</figure>
 			)
 		}
 	}
 
-	// Twitter / X
-	if (provider === 'twitter' || /twitter\.com|x\.com/i.test(url)) {
+	// Visible fallback — never disappear silently
+	if (url) {
 		return (
-			<figure className={className + ' is-provider-twitter'}>
-				<div className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
+			<figure className={className}>
+				<p className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
 					<a
 						href={url}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="break-all text-primary-600 underline"
+						className="break-all text-blue-600 underline"
 					>
 						{url}
 					</a>
-				</div>
-			</figure>
-		)
-	}
-
-	// Last resort: still try to detect youtube from raw html string only
-	const htmlYoutubeId = getYoutubeId(extractUrlFromHtml(renderedHtml))
-	if (htmlYoutubeId) {
-		return (
-			<figure className={className + ' is-type-video is-provider-youtube'}>
-				<YoutubeFrame id={htmlYoutubeId} />
-			</figure>
-		)
-	}
-
-	if (url) {
-		return (
-			<figure className={className}>
-				<a href={url} target="_blank" rel="noopener noreferrer">
-					{url}
-				</a>
+				</p>
 			</figure>
 		)
 	}
@@ -188,6 +178,15 @@ const CoreEmbed = (props: any) => {
 				className={className}
 				dangerouslySetInnerHTML={{ __html: renderedHtml }}
 			/>
+		)
+	}
+
+	// Debug-friendly placeholder so you can see the block is mounting
+	if (process.env.NODE_ENV === 'development') {
+		return (
+			<figure className={className}>
+				<p className="text-sm text-red-500">Embed block: no URL found</p>
+			</figure>
 		)
 	}
 
