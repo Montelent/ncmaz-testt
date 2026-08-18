@@ -5,36 +5,74 @@ const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online'
 module.exports = {
 	siteUrl: SITE_URL,
 	generateRobotsTxt: true,
-	// Makes browsers show a styled table instead of raw XML
+	// Styled sitemap view in browsers (optional for humans; ignored by Google)
 	xslUrl: `${SITE_URL}/sitemap.xsl`,
 	exclude: [
 		'/submission',
-		'/dashboard/posts/published',
-		'/dashboard/posts/draft',
-		'/dashboard/posts/pending',
-		'/dashboard/posts/trash',
-		'/dashboard/posts/schedule',
-		'/dashboard/edit-profile/general',
-		'/dashboard/edit-profile/profile',
-		'/dashboard/edit-profile/password',
-		'/dashboard/edit-profile/socials',
-		'/ncmaz_for_ncmazfc_preview_blocks',
-		'/preview',
-		'/reset-password',
-		'/readinglist',
+		'/submission/*',
 		'/dashboard',
-		'/dashboard/edit-profile',
-		'/dashboard/posts',
-		'/wordpress-sitemap.xml',
+		'/dashboard/*',
+		'/preview',
+		'/preview/*',
+		'/reset-password',
+		'/reset-password/*',
+		'/readinglist',
+		'/readinglist/*',
+		'/login',
+		'/sign-up',
+		'/ncmaz_for_ncmazfc_preview_blocks',
+		'/api/*',
+		'/server-sitemap.xml',
 	],
 	robotsTxtOptions: {
-		additionalSitemaps: [`${SITE_URL}/wordpress-sitemap.xml`],
+		policies: [
+			{
+				userAgent: '*',
+				allow: '/',
+				disallow: [
+					'/dashboard',
+					'/dashboard/*',
+					'/preview',
+					'/preview/*',
+					'/submission',
+					'/submission/*',
+					'/login',
+					'/sign-up',
+					'/reset-password',
+					'/readinglist',
+					'/api/',
+					'/ncmaz_for_ncmazfc_preview_blocks',
+				],
+			},
+			// Optional: be explicit for major crawlers (same rules)
+			{
+				userAgent: 'Googlebot',
+				allow: '/',
+				disallow: [
+					'/dashboard',
+					'/dashboard/*',
+					'/preview',
+					'/preview/*',
+					'/submission',
+					'/submission/*',
+					'/login',
+					'/sign-up',
+					'/reset-password',
+					'/readinglist',
+					'/api/',
+				],
+			},
+		],
+		additionalSitemaps: [
+			`${SITE_URL}/sitemap.xml`,
+			`${SITE_URL}/wordpress-sitemap.xml`,
+		],
 	},
 	transform: async (config, path) => {
 		// Valid W3C / ISO 8601 lastmod (Google-safe)
 		const lastmod = new Date().toISOString()
 
-		const lowPriorityPaths = ['/contact', '/login', '/sign-up']
+		const lowPriorityPaths = ['/contact', '/about-us', '/disclaimer', '/privacy-policy', '/tos']
 		const isLowPriority = lowPriorityPaths.includes(path.replace(/\/$/, ''))
 		const isHomePage = path === '/'
 
