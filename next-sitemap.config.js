@@ -5,7 +5,6 @@ const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online'
 module.exports = {
 	siteUrl: SITE_URL,
 	generateRobotsTxt: true,
-	// Styled sitemap view in browsers (optional for humans; ignored by Google)
 	xslUrl: `${SITE_URL}/sitemap.xsl`,
 	exclude: [
 		'/submission',
@@ -44,7 +43,6 @@ module.exports = {
 					'/ncmaz_for_ncmazfc_preview_blocks',
 				],
 			},
-			// Optional: be explicit for major crawlers (same rules)
 			{
 				userAgent: 'Googlebot',
 				allow: '/',
@@ -63,16 +61,19 @@ module.exports = {
 				],
 			},
 		],
-		additionalSitemaps: [
-			`${SITE_URL}/sitemap.xml`,
-			`${SITE_URL}/wordpress-sitemap.xml`,
-		],
+		// Only EXTRA sitemaps — never list sitemap.xml itself (causes index-in-index)
+		additionalSitemaps: [`${SITE_URL}/wordpress-sitemap.xml`],
 	},
 	transform: async (config, path) => {
-		// Valid W3C / ISO 8601 lastmod (Google-safe)
 		const lastmod = new Date().toISOString()
 
-		const lowPriorityPaths = ['/contact', '/about-us', '/disclaimer', '/privacy-policy', '/tos']
+		const lowPriorityPaths = [
+			'/contact',
+			'/about-us',
+			'/disclaimer',
+			'/privacy-policy',
+			'/tos',
+		]
 		const isLowPriority = lowPriorityPaths.includes(path.replace(/\/$/, ''))
 		const isHomePage = path === '/'
 
