@@ -66,14 +66,13 @@ function hasSeoField(selections: readonly SelectionNode[]): boolean {
 	)
 }
 
-/**
- * Clone GetPostSiglePageDocument and add post { seo { ... } }
- * so Faust/Apollo request Rank Math without regenerating __generated__.
- */
-export function injectPostSeoIntoQuery(document: DocumentNode): DocumentNode {
+function injectSeoOnRootField(
+	document: DocumentNode,
+	rootFieldName: string,
+): DocumentNode {
 	return visit(document, {
 		Field(node) {
-			if (node.name.value !== 'post' || !node.selectionSet) {
+			if (node.name.value !== rootFieldName || !node.selectionSet) {
 				return
 			}
 			if (hasSeoField(node.selectionSet.selections)) {
@@ -88,4 +87,19 @@ export function injectPostSeoIntoQuery(document: DocumentNode): DocumentNode {
 			}
 		},
 	})
+}
+
+/**
+ * Clone GetPostSiglePageDocument and add post { seo { ... } }
+ */
+export function injectPostSeoIntoQuery(document: DocumentNode): DocumentNode {
+	return injectSeoOnRootField(document, 'post')
+}
+
+/**
+ * Clone GetPageDocument and add page { seo { ... } }
+ * (Rank Math noindex/robots on WP Pages)
+ */
+export function injectPageSeoIntoQuery(document: DocumentNode): DocumentNode {
+	return injectSeoOnRootField(document, 'page')
 }

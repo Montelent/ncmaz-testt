@@ -1,10 +1,11 @@
 import { NextSeo } from 'next-seo'
+import Head from 'next/head'
 
 export type RankMathSeo = {
 	title?: string | null
 	description?: string | null
 	canonicalUrl?: string | null
-	robots?: string | string[] | null
+	robots?: string | string[] | Record<string, string> | null
 	jsonLd?: {
 		raw?: string | null
 	} | null
@@ -28,25 +29,18 @@ function getBackend(): string {
 	return (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(/\/$/, '')
 }
 
-/** Page URLs only — never rewrite media/upload URLs */
 function toFrontendUrl(url?: string | null): string | undefined {
 	if (!url) return undefined
 	const frontend = getFrontend()
 	const backend = getBackend()
 	if (!frontend || !backend) return url
-
-	// Keep real image/file hosts as-is
-	if (url.includes('/wp-content/')) {
-		return url
-	}
-
+	if (url.includes('/wp-content/')) return url
 	if (url.startsWith(backend)) {
 		return frontend + url.slice(backend.length)
 	}
 	return url
 }
 
-/** Featured image: always prefer real backend (bd.) URL */
 function resolveImageUrl(imageUrl?: string | null): string {
 	if (!imageUrl) return ''
 	if (imageUrl.includes('/wp-content/') || imageUrl.startsWith('http')) {
@@ -74,9 +68,21 @@ function extractJsonLd(raw?: string | null): string | null {
 	return jsonText
 }
 
-function robotsToString(robots?: string | string[] | null): string {
+/** Rank Math robots can be string, string[], or { index, follow, ... } */
+function robotsToString(
+	robots?: string | string[] | Record<string, string> | null,
+): string {
 	if (!robots) return ''
-	if (Array.isArray(robots)) return robots.join(',').toLowerCase()
+	if (Array.isArray(robots)) {
+		return robots.map(String).join(',').toLowerCase()
+	}
+	if (typeof robots === 'object') {
+		return Object.values(robots)
+			.map(String)
+			.filter(Boolean)
+			.join(',')
+			.toLowerCase()
+	}
 	return String(robots).toLowerCase()
 }
 
@@ -107,11 +113,7 @@ function fixImageValue(value: unknown, realImage: string): unknown {
 	}
 
 	if (isPlaceholder(value)) return realImage
-
-	if (typeof value === 'string') {
-		if (isPlaceholder(value)) return realImage
-		return value
-	}
+	if (typeof value === 'string') return value
 
 	if (Array.isArray(value)) {
 		const mapped = value
@@ -141,22 +143,17 @@ function walkAndFix(node: unknown, realImage: string): unknown {
 
 	const obj = { ...(node as Record<string, unknown>) }
 
-	// Fix image fields (keep bd. upload URLs / realImage)
 	if ('image' in obj) {
 		obj.image = fixImageValue(obj.image, realImage)
 		if (
 			obj.image === undefined ||
 			(Array.isArray(obj.image) && obj.image.length === 0)
 		) {
-			if (realImage) {
-				obj.image = [realImage]
-			} else {
-				delete obj.image
-			}
+			if (realImage) obj.image = [realImage]
+			else delete obj.image
 		}
 	}
 
-	// Rewrite page URLs only (skips /wp-content/)
 	if (typeof obj.url === 'string' && !obj.url.includes('/wp-content/')) {
 		if (isPlaceholder(obj.url)) {
 			if (realImage) obj.url = realImage
@@ -166,7 +163,10 @@ function walkAndFix(node: unknown, realImage: string): unknown {
 		}
 	}
 
-	if (typeof obj['@id'] === 'string' && !String(obj['@id']).includes('/wp-content/')) {
+	if (
+		typeof obj['@id'] === 'string' &&
+		!String(obj['@id']).includes('/wp-content/')
+	) {
 		const rewritten = toFrontendUrl(String(obj['@id']))
 		if (rewritten) obj['@id'] = rewritten
 	}
@@ -192,9 +192,7 @@ function sanitizeJsonLd(
 
 	let out = jsonText
 
-	// Rewrite backend page URLs to frontend, but NOT upload paths
 	if (frontend && backend) {
-		// Protect upload URLs from domain replace
 		const uploadToken = '___UPLOAD_URL___'
 		const uploads: string[] = []
 		out = out.replace(
@@ -261,6 +259,9 @@ export default function RankMathHead({
 	if (!seo) return null
 
 	const robotsStr = robotsToString(seo.robots)
+	const noindex = robotsStr.includes('noindex')
+	const nofollow = robotsStr.includes('nofollow')
+
 	const description =
 		seo.description?.replace(/<[^>]*>?/gm, '').trim() || undefined
 
@@ -282,14 +283,27 @@ export default function RankMathHead({
 		? sanitizeJsonLd(extracted, imageUrl || null)
 		: null
 
+	// Explicit robots content for Search Console / view-source
+	const robotsContent = [
+		noindex ? 'noindex' : 'index',
+		nofollow ? 'nofollow' : 'follow',
+	].join(',')
+
 	return (
 		<>
+			<Head>
+				<meta name="robots" content={robotsContent} />
+				{noindex ? (
+					<meta name="googlebot" content={robotsContent} />
+				) : null}
+			</Head>
+
 			<NextSeo
 				title={seo.title || undefined}
 				description={description}
-				canonical={canonical}
-				noindex={robotsStr.includes('noindex')}
-				nofollow={robotsStr.includes('nofollow')}
+				canonical={noindex ? undefined : canonical}
+				noindex={noindex}
+				nofollow={nofollow}
 				openGraph={{
 					title: seo.openGraph?.title || seo.title || undefined,
 					description:
@@ -308,7 +322,7 @@ export default function RankMathHead({
 				}}
 			/>
 
-			{jsonLdFinal && jsonLdFinal.trim().length > 2 ? (
+			{!noindex && jsonLdFinal && jsonLdFinal.trim().length > 2 ? (
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: jsonLdFinal }}

@@ -9,14 +9,19 @@ import { FOOTER_LOCATION, PRIMARY_LOCATION } from '@/contains/menu'
 import PageLayout from '@/container/PageLayout'
 import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
 import RankMathHead from '@/components/RankMathHead'
+import { injectPageSeoIntoQuery } from '@/utils/injectPostSeoIntoQuery'
+import type { DocumentNode } from 'graphql'
 
 const Page: FaustTemplate<GetPageQuery> = (props) => {
 	if (props.loading) {
 		return <>Loading...</>
 	}
 
-	const { title, editorBlocks, featuredImage, ncPageMeta, seo } =
-		(props.data?.page as any) || {}
+	const pageNode = (props.data as any)?.page || {}
+	const { title, editorBlocks, featuredImage, ncPageMeta } = pageNode
+
+	// Prefer Rank Math from GraphQL (includes robots / noindex)
+	const rankMathSeo = pageNode.seo ?? null
 
 	const isGutenbergPage =
 		!!props.__SEED_NODE__?.isFrontPage || ncPageMeta?.isFullWithPage
@@ -26,13 +31,12 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 		parentKey: 'parentClientId',
 	})
 
-	// Fragment-masked generalSettings — cast to read fields
 	const generalSettings = props.data
 		?.generalSettings as NcgeneralSettingsFieldsFragmentFragment | null | undefined
 
-	// Rank Math SEO, with safe fallback (no typed .description on masked object)
+	// Only fall back when Rank Math seo is completely missing
 	const pageSeo =
-		seo ??
+		rankMathSeo ||
 		(title
 			? {
 					title,
@@ -40,9 +44,14 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 				}
 			: null)
 
+	const hasRankMath = !!rankMathSeo
+
 	return (
 		<>
-			<RankMathHead seo={pageSeo} />
+			<RankMathHead
+				seo={pageSeo}
+				imageUrl={featuredImage?.node?.sourceUrl}
+			/>
 
 			<PageLayout
 				headerMenuItems={props.data?.primaryMenuItems?.nodes || []}
@@ -50,6 +59,7 @@ const Page: FaustTemplate<GetPageQuery> = (props) => {
 				pageFeaturedImageUrl={featuredImage?.node?.sourceUrl}
 				pageTitle={title}
 				generalSettings={generalSettings}
+				disableDefaultSeo={hasRankMath}
 			>
 				<div className="nc-BgGlassmorphism absolute inset-x-0 z-[-1] flex min-h-0 overflow-hidden py-24 pl-20 md:top-10 xl:top-20">
 					<span className="block h-72 w-72 rounded-full bg-[#ef233c] opacity-10 mix-blend-multiply blur-3xl filter lg:h-96 lg:w-96"></span>
@@ -95,6 +105,9 @@ Page.variables = ({ databaseId }, ctx) => {
 	}
 }
 
-Page.query = GetPageDocument as any
+// Inject Rank Math seo into page query (robots / noindex / canonical)
+Page.query = injectPageSeoIntoQuery(
+	GetPageDocument as unknown as DocumentNode,
+) as any
 
 export default Page
