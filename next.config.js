@@ -10,6 +10,19 @@ module.exports = withFaust({
 	typedRoutes: false,
 	compress: true,
 	poweredByHeader: false,
+
+	// Shared Hostinger: WP GraphQL can 503 under parallel SSG.
+	// Give each page more time and retry failed prerenders.
+	staticPageGenerationTimeout: 180,
+	experimental: {
+		// Retry a failed static page a few times (transient 503s)
+		staticGenerationRetryCount: 5,
+		// Limit how many pages prerender at once (reduces GraphQL stampedes)
+		staticGenerationMaxConcurrency: 2,
+		// Fewer worker processes hitting bd.sammyguru.online together
+		cpu: 1,
+	},
+
 	images: {
 		formats: ['image/avif', 'image/webp'],
 		deviceSizes: [640, 750, 828, 1080, 1200, 1920],
