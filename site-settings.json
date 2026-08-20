@@ -32,18 +32,18 @@
 		"sub_title": "Let's explore the most popular categories"
 	},
 	"site_info": {
-		"site_title": "Ncmaz Nextjs Blog",
-		"site_description": "Ncmaz Nextjs Blog headless WordPress",
-		"site_keywords": "Ncmaz Nextjs Blog",
-		"site_author": "ChisNghiax",
-		"site_email": "Your Email",
-		"site_phone": "Your Phone",
-		"site_address": "Your Address",
-		"site_city": "Your City",
-		"site_state": "Your State",
-		"site_zip": "Your Zip",
-		"site_country": "Your Country",
-		"site_url": "https://www.yoursite.com",
+		"site_title": "SammyGuru",
+		"site_description": "Samsung Galaxy news, how-to guides, tips and tricks",
+		"site_keywords": "Samsung, Galaxy, One UI, SammyGuru",
+		"site_author": "SammyGuru",
+		"site_email": "sammyguru.online@aol.com",
+		"site_phone": "+2348104640842",
+		"site_address": "Lagos, Nigeria",
+		"site_city": "Lagos",
+		"site_state": "Lagos",
+		"site_zip": "",
+		"site_country": "Nigeria",
+		"site_url": "https://sammyguru.online",
 		"site_logo": "/logo-512x356.png",
 		"site_logo_light": "/logo-512x356.png",
 		"site_favicon": "/favicon.png"
@@ -51,27 +51,27 @@
 	"site_socials": [
 		{
 			"name": "facebook",
-			"url": "https://www.facebook.com/yourfacebookpage",
+			"url": "https://www.facebook.com/sammygurus",
 			"icon": "/images/socials/facebook.svg",
 			"description": "Follow us on Facebook"
 		},
 		{
 			"name": "twitter",
-			"url": "https://twitter.com/yourtwitterpage",
+			"url": "https://x.com/SammyGuruOnline",
 			"icon": "/images/socials/x-twitter.svg",
-			"description": "Follow us on Twitter"
+			"description": "Follow us on X (Twitter)"
 		},
 		{
 			"name": "github",
-			"url": "https://www.github.com/yourmediumpage",
+			"url": "https://github.com/Montelent",
 			"icon": "/images/socials/github.svg",
-			"description": "Follow us on Github"
+			"description": "Follow us on GitHub"
 		},
 		{
 			"name": "tiktok",
-			"url": "https://www.tiktok.com/yourtiktokpage",
+			"url": "https://www.tiktok.com/@montelent",
 			"icon": "/images/socials/tiktok.svg",
-			"description": "Follow us on Tiktok"
+			"description": "Follow us on TikTok"
 		}
 	],
 	"site_header": {
@@ -204,7 +204,7 @@
 		"lost_password": {
 			"is_use_lostpassword_default_of_wp": false,
 			"message": "Lost password not implemented yet! Please contact admmin for support.",
-			"url_lostpassword_default_of_wp": "https://yourwebsite.com/wp-login.php?action=lostpassword"
+			"url_lostpassword_default_of_wp": "https://sammyguru.online/wp-login.php?action=lostpassword"
 		}
 	},
 	"mobile_nav_sidebar": {
