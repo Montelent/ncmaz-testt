@@ -29,6 +29,14 @@ function getBackend(): string {
 	return (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(/\/$/, '')
 }
 
+function frontendHostname(): string {
+	try {
+		return new URL(getFrontend()).hostname.replace(/^www\./, '')
+	} catch {
+		return 'SammyGuru'
+	}
+}
+
 function toFrontendUrl(url?: string | null): string | undefined {
 	if (!url) return undefined
 	const frontend = getFrontend()
@@ -38,7 +46,63 @@ function toFrontendUrl(url?: string | null): string | undefined {
 	if (url.startsWith(backend)) {
 		return frontend + url.slice(backend.length)
 	}
+	// Hostname-only leaks (e.g. //bd.sammyguru.online/path)
+	try {
+		const bh = new URL(backend).hostname
+		const fh = new URL(frontend).hostname
+		if (url.includes(bh)) {
+			return url.split(bh).join(fh)
+		}
+	} catch {
+		/* ignore */
+	}
 	return url
+}
+
+/**
+ * og:site_name must be the public brand/host, never the WP backend (bd.).
+ * Rank Math often sends the WP home URL or backend host here.
+ */
+function toFrontendSiteName(name?: string | null): string {
+	const frontend = getFrontend()
+	const backend = getBackend()
+	const fallback = frontendHostname()
+
+	if (!name || !String(name).trim()) {
+		return fallback
+	}
+
+	let out = String(name).trim()
+
+	if (backend) {
+		out = out.split(backend).join(frontend || fallback)
+	}
+
+	try {
+		if (backend) {
+			const bh = new URL(backend).hostname
+			const fh = frontend ? new URL(frontend).hostname : fallback
+			out = out.split(bh).join(fh)
+		}
+	} catch {
+		/* ignore */
+	}
+
+	// If Rank Math sent a full URL as site_name, use public hostname
+	if (/^https?:\/\//i.test(out)) {
+		try {
+			return new URL(frontend || out).hostname.replace(/^www\./, '')
+		} catch {
+			return fallback
+		}
+	}
+
+	// Still contains backend host substring
+	if (/bd\.sammyguru\.online/i.test(out)) {
+		return fallback
+	}
+
+	return out || fallback
 }
 
 function resolveImageUrl(imageUrl?: string | null): string {
@@ -68,7 +132,6 @@ function extractJsonLd(raw?: string | null): string | null {
 	return jsonText
 }
 
-/** Rank Math robots can be string, string[], or { index, follow, ... } */
 function robotsToString(
 	robots?: string | string[] | Record<string, string> | null,
 ): string {
@@ -171,6 +234,11 @@ function walkAndFix(node: unknown, realImage: string): unknown {
 		if (rewritten) obj['@id'] = rewritten
 	}
 
+	// name / site name fields that may contain backend host
+	if (typeof obj.name === 'string') {
+		obj.name = toFrontendSiteName(obj.name)
+	}
+
 	for (const key of Object.keys(obj)) {
 		if (key === 'image') continue
 		const val = obj[key]
@@ -268,6 +336,7 @@ export default function RankMathHead({
 	const canonical = toFrontendUrl(seo.canonicalUrl)
 	const ogUrl = toFrontendUrl(seo.openGraph?.url) || canonical
 	const ogImage = resolveImageUrl(imageUrl || null)
+	const siteName = toFrontendSiteName(seo.openGraph?.siteName)
 
 	const ogType =
 		seo.openGraph?.type === 'article' || seo.openGraph?.type === 'Article'
@@ -283,7 +352,6 @@ export default function RankMathHead({
 		? sanitizeJsonLd(extracted, imageUrl || null)
 		: null
 
-	// Explicit robots content for Search Console / view-source
 	const robotsContent = [
 		noindex ? 'noindex' : 'index',
 		nofollow ? 'nofollow' : 'follow',
@@ -311,7 +379,7 @@ export default function RankMathHead({
 						description,
 					url: ogUrl,
 					type: ogType,
-					siteName: seo.openGraph?.siteName || undefined,
+					siteName,
 					images: ogImage ? [{ url: ogImage }] : undefined,
 				}}
 				twitter={{
