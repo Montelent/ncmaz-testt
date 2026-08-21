@@ -15,8 +15,10 @@ export type SharePayload = {
 	hashtags: string
 	hashtagList: string[]
 	imageUrl: string
-	/** Full body for WhatsApp / Telegram / Email / copy */
+	/** Full body for WhatsApp / Telegram / Email / Threads / copy */
 	fullText: string
+	/** Caption without URL (Facebook quote, etc.) */
+	captionText: string
 	/** Shorter body for X (character-limited) */
 	twitterText: string
 }
@@ -64,9 +66,9 @@ export function buildSharePayload(input: SharePayloadInput): SharePayload {
 
 	const hashtags = hashtagList.join(' ')
 
-	const fullText = [title, excerpt, hashtags, url].filter(Boolean).join('\n\n')
+	const captionText = [title, excerpt, hashtags].filter(Boolean).join('\n\n')
+	const fullText = [captionText, url].filter(Boolean).join('\n\n')
 
-	// X/Twitter: leave room for URL (~23 chars) + hashtags
 	const twitterCore = [title, excerpt].filter(Boolean).join('\n\n')
 	const twitterText = truncate(
 		[twitterCore, hashtags].filter(Boolean).join('\n\n'),
@@ -81,6 +83,7 @@ export function buildSharePayload(input: SharePayloadInput): SharePayload {
 		hashtagList,
 		imageUrl,
 		fullText,
+		captionText,
 		twitterText,
 	}
 }
@@ -89,22 +92,34 @@ export function buildShareHref(
 	network: string,
 	payload: SharePayload,
 ): string {
-	const { title, excerpt, url, fullText, twitterText, hashtagList, imageUrl } =
-		payload
+	const {
+		title,
+		excerpt,
+		url,
+		fullText,
+		captionText,
+		twitterText,
+		hashtagList,
+		imageUrl,
+	} = payload
 	const enc = encodeURIComponent
 
 	switch (network) {
 		case 'Facebook':
-			// Preview image comes from Open Graph on the URL
-			return `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`
+			// u = link (Facebook scrapes OG for title/desc/IMAGE).
+			// quote = prefilled caption (title + excerpt + hashtags) when FB still honors it.
+			return `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}&quote=${enc(captionText)}`
 		case 'Twitter':
 			return `https://twitter.com/intent/tweet?text=${enc(twitterText)}&url=${enc(url)}`
+		case 'Threads':
+			// Threads intent: full caption + link in one text field
+			return `https://www.threads.net/intent/post?text=${enc(fullText)}`
 		case 'Linkedin':
 			return `https://www.linkedin.com/shareArticle?mini=true&url=${enc(url)}&title=${enc(title)}&summary=${enc(excerpt)}`
 		case 'WhatsApp':
 			return `https://api.whatsapp.com/send?text=${enc(fullText)}`
 		case 'Telegram':
-			return `https://t.me/share/url?url=${enc(url)}&text=${enc([title, excerpt, hashtagList.join(' ')].filter(Boolean).join('\n\n'))}`
+			return `https://t.me/share/url?url=${enc(url)}&text=${enc(captionText)}`
 		case 'Reddit':
 			return `https://www.reddit.com/submit?url=${enc(url)}&title=${enc(title)}`
 		case 'Pinterest':

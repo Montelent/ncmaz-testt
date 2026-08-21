@@ -65,6 +65,25 @@ const SocialsShareDropdown: FC<Props> = ({
 			toast.success(T['Link copied to clipboard'] || 'Copied')
 			return
 		}
+
+		// Facebook no longer reliably prefills captions. Copy caption so user can paste,
+		// then open share dialog (link + OG image/title/description).
+		if (item.id === 'Facebook') {
+			const text = payload.captionText || payload.fullText
+			if (text && navigator.clipboard?.writeText) {
+				navigator.clipboard.writeText(text).then(
+					() => {
+						toast.success(
+							'Caption copied — paste it into your Facebook post if needed',
+							{ duration: 4000 },
+						)
+					},
+					() => {
+						/* ignore clipboard errors */
+					},
+				)
+			}
+		}
 	}
 
 	const actions: NcDropDownItem<TDropDownShareItem>[] = [
