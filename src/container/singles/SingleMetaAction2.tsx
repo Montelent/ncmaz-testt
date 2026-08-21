@@ -16,8 +16,31 @@ export interface Props {
 }
 
 const SingleMetaAction2: FC<Props> = ({ className = '', post }) => {
-	const { commentCount, uri, ncPostMetaData, author, databaseId } =
-		getPostDataFromPostFragment(post || {})
+	const data = getPostDataFromPostFragment(post || {})
+	const {
+		commentCount,
+		uri,
+		ncPostMetaData,
+		databaseId,
+		title,
+		excerpt,
+		categories,
+		featuredImage,
+	} = data as any
+
+	const categoryNames: string[] = (
+		categories?.nodes ||
+		categories ||
+		[]
+	)
+		.map((c: any) => c?.name)
+		.filter(Boolean)
+
+	const imageUrl =
+		featuredImage?.node?.sourceUrl ||
+		featuredImage?.sourceUrl ||
+		ncPostMetaData?.featuredImage?.node?.sourceUrl ||
+		''
 
 	const router = useRouter()
 	const IS_PREVIEW = router.pathname === '/preview'
@@ -49,7 +72,12 @@ const SingleMetaAction2: FC<Props> = ({ className = '', post }) => {
 						postDatabseId={databaseId}
 						containerClassName="h-9 w-9 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200"
 					/>
-					<SocialsShareDropdown />
+					<SocialsShareDropdown
+						title={title}
+						excerpt={excerpt}
+						categories={categoryNames}
+						imageUrl={imageUrl}
+					/>
 					<PostActionDropdown
 						containerClassName="h-9 w-9 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
 						iconClass="h-5 w-5"
