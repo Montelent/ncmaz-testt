@@ -12,21 +12,22 @@ module.exports = withFaust({
 	poweredByHeader: false,
 
 	// Shared Hostinger: WP GraphQL can 503 under parallel SSG.
-	// Give each page more time and retry failed prerenders.
 	staticPageGenerationTimeout: 180,
 	experimental: {
-		// Retry a failed static page a few times (transient 503s)
 		staticGenerationRetryCount: 5,
-		// Limit how many pages prerender at once (reduces GraphQL stampedes)
 		staticGenerationMaxConcurrency: 2,
-		// Fewer worker processes hitting bd.sammyguru.online together
 		cpu: 1,
 	},
 
+	/**
+	 * CRITICAL for Hostinger shared Node RAM:
+	 * `/_next/image` was fetching + re-encoding remote WP images (bd.sammyguru.online)
+	 * under crawler bursts → high RAM/I/O → intermittent 503s.
+	 * unoptimized: serve original image URLs (browser/CDN cache) — no server-side resize.
+	 */
 	images: {
-		formats: ['image/avif', 'image/webp'],
-		deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		unoptimized: true,
+		// Keep patterns so next/image still allows remote src attributes
 		remotePatterns: [
 			{
 				protocol: 'http',
@@ -43,6 +44,12 @@ module.exports = withFaust({
 			{
 				protocol: 'https',
 				hostname: getWpHostname(),
+				port: '',
+				pathname: '/**',
+			},
+			{
+				protocol: 'https',
+				hostname: 'bd.sammyguru.online',
 				port: '',
 				pathname: '/**',
 			},
@@ -104,6 +111,63 @@ module.exports = withFaust({
 			},
 		],
 	},
+
+	async redirects() {
+		return [
+			// Fix 404s bots/users hit for common legal/blog paths
+			{
+				source: '/terms',
+				destination: '/tos/',
+				permanent: true,
+			},
+			{
+				source: '/terms/',
+				destination: '/tos/',
+				permanent: true,
+			},
+			{
+				source: '/terms-of-use',
+				destination: '/tos/',
+				permanent: true,
+			},
+			{
+				source: '/terms-of-use/',
+				destination: '/tos/',
+				permanent: true,
+			},
+			{
+				source: '/blog',
+				destination: '/posts/',
+				permanent: true,
+			},
+			{
+				source: '/blog/',
+				destination: '/posts/',
+				permanent: true,
+			},
+			{
+				source: '/news',
+				destination: '/category/news/',
+				permanent: true,
+			},
+			{
+				source: '/news/',
+				destination: '/category/news/',
+				permanent: true,
+			},
+			{
+				source: '/all-posts',
+				destination: '/posts/',
+				permanent: true,
+			},
+			{
+				source: '/all-posts/',
+				destination: '/posts/',
+				permanent: true,
+			},
+		]
+	},
+
 	async headers() {
 		return [
 			{
