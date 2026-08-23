@@ -26,6 +26,7 @@ const NextPrev: FC<NextPrevProps> = ({
 		>
 			{!onlyNext && (
 				<button
+					type="button"
 					className={`${btnClassName} ${
 						!onlyPrev ? 'mr-2' : ''
 					} flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
@@ -35,13 +36,15 @@ const NextPrev: FC<NextPrevProps> = ({
 						e.preventDefault()
 						onClickPrev()
 					}}
-					title="Prev"
+					title="Previous"
+					aria-label="Previous"
 					onMouseEnter={() => setFocus('left')}
 				>
 					<svg
 						className="h-5 w-5 rtl:rotate-180"
 						viewBox="0 0 24 24"
 						fill="none"
+						aria-hidden="true"
 					>
 						<path
 							d="M9.57 5.92993L3.5 11.9999L9.57 18.0699"
@@ -64,6 +67,7 @@ const NextPrev: FC<NextPrevProps> = ({
 			)}
 			{!onlyPrev && (
 				<button
+					type="button"
 					className={`${btnClassName} flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
 						focus === 'right' ? 'border-2' : ''
 					}`}
@@ -72,12 +76,14 @@ const NextPrev: FC<NextPrevProps> = ({
 						onClickNext()
 					}}
 					title="Next"
+					aria-label="Next"
 					onMouseEnter={() => setFocus('right')}
 				>
 					<svg
 						className="h-5 w-5 rtl:rotate-180"
 						viewBox="0 0 24 24"
 						fill="none"
+						aria-hidden="true"
 					>
 						<path
 							d="M14.4301 5.92993L20.5001 11.9999L14.4301 18.0699"
