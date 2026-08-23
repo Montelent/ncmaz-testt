@@ -25,7 +25,6 @@ const AddSubscriberForm: FC<Props> = ({ className = '' }) => {
 	let THANKS = ''
 
 	if (data && called && data?.ncmazFaustAddSubscriberToMailpoet?.success) {
-		// thank you message after success subscribe
 		THANKS =
 			NC_SITE_SETTINGS.subcription_widget?.success_message || 'Thank you!'
 	}
@@ -46,7 +45,6 @@ const AddSubscriberForm: FC<Props> = ({ className = '' }) => {
 				if (!email) {
 					return
 				}
-				// regex check email validation
 				if (!email.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)) {
 					return
 				}
@@ -58,7 +56,11 @@ const AddSubscriberForm: FC<Props> = ({ className = '' }) => {
 			}}
 		>
 			<div className="relative">
+				<label className="sr-only" htmlFor="subscriber-email">
+					Email address
+				</label>
 				<Input
+					id="subscriber-email"
 					required
 					aria-required
 					placeholder={NC_SITE_SETTINGS.subcription_widget?.placeholder}
@@ -67,10 +69,11 @@ const AddSubscriberForm: FC<Props> = ({ className = '' }) => {
 				/>
 				<ButtonCircle
 					type="submit"
+					aria-label="Subscribe"
 					className="absolute end-1 top-1/2 -translate-y-1/2 transform dark:bg-neutral-100/10 dark:text-white dark:hover:bg-neutral-100/15"
 					disabled={loading}
 				>
-					<ArrowRightIcon className="h-5 w-5 rtl:rotate-180" />
+					<ArrowRightIcon className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
 				</ButtonCircle>
 			</div>
 
