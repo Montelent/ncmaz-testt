@@ -11,12 +11,32 @@ module.exports = withFaust({
 	compress: true,
 	poweredByHeader: false,
 
+	// Smaller production JS (no console noise in client bundles)
+	compiler: {
+		removeConsole:
+			process.env.NODE_ENV === 'production'
+				? { exclude: ['error', 'warn'] }
+				: false,
+	},
+
+	// Tree-shake heavy packages when imported as `import { x } from 'lodash'`
+	modularizeImports: {
+		lodash: {
+			transform: 'lodash/{{member}}',
+		},
+	},
+
 	// Shared Hostinger: WP GraphQL can 503 under parallel SSG.
 	staticPageGenerationTimeout: 180,
 	experimental: {
 		staticGenerationRetryCount: 5,
 		staticGenerationMaxConcurrency: 2,
 		cpu: 1,
+		optimizePackageImports: [
+			'@heroicons/react',
+			'framer-motion',
+			'lodash',
+		],
 	},
 
 	/**
@@ -27,7 +47,6 @@ module.exports = withFaust({
 	 */
 	images: {
 		unoptimized: true,
-		// Keep patterns so next/image still allows remote src attributes
 		remotePatterns: [
 			{
 				protocol: 'http',
@@ -114,7 +133,6 @@ module.exports = withFaust({
 
 	async redirects() {
 		return [
-			// Fix 404s bots/users hit for common legal/blog paths
 			{
 				source: '/terms',
 				destination: '/tos/',
