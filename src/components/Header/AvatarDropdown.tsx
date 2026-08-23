@@ -46,7 +46,6 @@ export default function AvatarDropdown({ className = '' }: Props) {
 	const T = getTrans()
 
 	useEffect(() => {
-		// mot so truong hop ngoai le, can phai reload lai trang
 		if (isAuthenticated === false && !!viewer?.databaseId) {
 			router.reload()
 		}
@@ -288,6 +287,12 @@ export default function AvatarDropdown({ className = '' }: Props) {
 					<>
 						<PopoverButton
 							as="button"
+							type="button"
+							aria-label={
+								viewer?.name
+									? `Account menu for ${viewer.name}`
+									: 'Account menu'
+							}
 							className={`flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 focus:outline-none sm:h-12 sm:w-12 dark:text-neutral-300 dark:hover:bg-neutral-800`}
 						>
 							{!viewer?.name ? (
@@ -333,36 +338,27 @@ export default function AvatarDropdown({ className = '' }: Props) {
 											<div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
 										)}
 
-										{/* ------------------ 0 --------------------- */}
 										{isReady && !isAuthenticated && renderMenuSignUp()}
 										{isReady && !isAuthenticated && renderMenuLogIn()}
 
-										{/* ------------------ 1 --------------------- */}
 										{isReady &&
 											NC_SITE_SETTINGS['submissions-settings']?.enable &&
 											renderCreatePost()}
 
-										{/* ------------------ 1 --------------------- */}
 										{isAuthenticated && renderMenuEditProfile()}
 
-										{/* ------------------ 2 --------------------- */}
 										{isAuthenticated && renderMenuMyPosts()}
 
-										{/* ------------------ 3 --------------------- */}
 										{isAuthenticated && renderMenuWishlist()}
 
-										{/* ------------------ 4 --------------------- */}
 										{renderMenuBookmark()}
 
 										<div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
 
-										{/* ------------------ 5 --------------------- */}
 										{renderSwitchDarkMode()}
 
-										{/* ------------------ 6 --------------------- */}
 										{renderMenuHelp()}
 
-										{/* ------------------ 7 --------------------- */}
 										{isAuthenticated && renderMenuLogOut()}
 									</div>
 								</div>
