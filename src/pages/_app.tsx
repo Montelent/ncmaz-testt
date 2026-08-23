@@ -11,7 +11,7 @@ import { Poppins } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import NextNProgress from 'nextjs-progressbar'
 import themeJson from '@/../theme.json'
-import { GoogleAnalytics } from 'nextjs-google-analytics'
+import Script from 'next/script'
 import dynamic from 'next/dynamic'
 import SiteWrapperProvider from '@/container/SiteWrapperProvider'
 
@@ -30,13 +30,28 @@ const poppins = Poppins({
 	weight: ['400', '600'],
 })
 
+const GA_ID =
+	process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+	process.env.NEXT_PUBLIC_GA_ID ||
+	'G-VPJZK5TPPB'
+
 export default function MyApp({ Component, pageProps }: AppProps) {
 	const router = useRouter()
 
 	return (
 		<>
-			{/* strategy: afterInteractive is default in this package */}
-			<GoogleAnalytics trackPageViews />
+			{/* Load analytics after the page is interactive — reduces main-thread contention */}
+			{GA_ID ? (
+				<>
+					<Script
+						src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+						strategy="lazyOnload"
+					/>
+					<Script id="ga-init" strategy="lazyOnload">{
+						`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{send_page_view:true});`
+					}</Script>
+				</>
+			) : null}
 
 			<FaustProvider pageProps={pageProps}>
 				<WordPressBlocksProvider
