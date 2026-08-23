@@ -9,7 +9,11 @@ export const HeaderSearchForm = () => {
 	const renderTrigger = () => {
 		return (
 			<div className="group relative cursor-pointer">
-				<button className="absolute inset-0"></button>
+				<button
+					type="button"
+					aria-label="Open search"
+					className="absolute inset-0"
+				></button>
 				<Input
 					type="text"
 					placeholder={T['Type to search...']}
@@ -17,9 +21,10 @@ export const HeaderSearchForm = () => {
 					sizeClass="h-[42px] pl-4 py-3"
 					rounded="rounded-full"
 					disabled
+					aria-hidden="true"
 				/>
 				<div className="absolute inset-y-0 end-0 flex items-center justify-center rounded-full pe-3 ps-2 text-neutral-500 dark:text-neutral-400">
-					<SearchIcon className="h-5 w-5" />
+					<SearchIcon className="h-5 w-5" aria-hidden="true" />
 				</div>
 			</div>
 		)
@@ -40,6 +45,9 @@ export const HeaderSearchForm2 = () => {
 					router.push('/search/posts/' + e.currentTarget.search.value || '')
 				}}
 			>
+				<label htmlFor="search" className="sr-only">
+					Search
+				</label>
 				<Input
 					type="search"
 					placeholder={T['Type to search...']}
@@ -51,9 +59,10 @@ export const HeaderSearchForm2 = () => {
 				/>
 				<button
 					type="submit"
+					aria-label="Search"
 					className="absolute inset-y-0 end-0 flex items-center justify-center rounded-full pe-3 ps-2 text-neutral-500 dark:text-neutral-400"
 				>
-					<SearchIcon className="h-5 w-5" />
+					<SearchIcon className="h-5 w-5" aria-hidden="true" />
 				</button>
 			</form>
 		)
@@ -70,8 +79,12 @@ export const SearchIconBtn = ({
 	const renderTrigger = () => {
 		return (
 			<div className={`relative block self-center ${className}`}>
-				<button className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 focus:outline-none sm:h-12 sm:w-12 dark:text-neutral-300 dark:hover:bg-neutral-800">
-					<SearchIcon className="h-5 w-5" />
+				<button
+					type="button"
+					aria-label="Open search"
+					className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 focus:outline-none sm:h-12 sm:w-12 dark:text-neutral-300 dark:hover:bg-neutral-800"
+				>
+					<SearchIcon className="h-5 w-5" aria-hidden="true" />
 				</button>
 			</div>
 		)
