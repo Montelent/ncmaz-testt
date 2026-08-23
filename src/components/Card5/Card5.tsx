@@ -7,40 +7,44 @@ import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment
 
 export interface Card5Props extends CommonPostCardProps {}
 
+function stripHtml(html: string): string {
+	return html.replace(/<[^>]*>/g, '').trim()
+}
+
 const Card5: FC<Card5Props> = ({ className = '', post }) => {
 	const {
 		title,
-		link,
 		date,
 		categories,
-		excerpt,
 		author,
-		postFormats,
-		featuredImage,
 		ncPostMetaData,
-		commentCount,
 		uri,
-		databaseId,
 	} = getPostDataFromPostFragment(post)
+
+	const plainTitle = stripHtml(title || 'Read post')
 
 	return (
 		<div
 			className={`nc-Card5 group relative rounded-3xl border border-neutral-200 bg-white p-5 transition-shadow hover:shadow-lg dark:border-neutral-700 dark:bg-neutral-900 ${className}`}
 		>
-			<Link href={uri} className="absolute inset-0 rounded-lg"></Link>
+			<Link
+				href={uri}
+				className="absolute inset-0 z-0 rounded-lg"
+				aria-label={plainTitle}
+			>
+				<span className="sr-only">{plainTitle}</span>
+			</Link>
 
-			<div className="flex flex-col">
+			<div className="relative z-[1] flex flex-col">
 				<CategoryBadgeList categories={categories?.nodes || []} />
 				<h2
 					className="my-4 block text-base font-semibold text-neutral-800 dark:text-neutral-300"
-					title={title}
+					title={plainTitle}
 				>
-					<Link
-						dangerouslySetInnerHTML={{ __html: title }}
-						href={uri}
+					<span
 						className="line-clamp-2"
-						title={title}
-					></Link>
+						dangerouslySetInnerHTML={{ __html: title }}
+					/>
 				</h2>
 				<CardAuthor2
 					className="relative mt-auto"
