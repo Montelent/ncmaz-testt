@@ -4,13 +4,19 @@ import { ButtonHTMLAttributes, FC } from 'react'
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
-const NextBtn: FC<Props> = ({ className = 'w-10 h-10 text-lg', ...args }) => {
+const NextBtn: FC<Props> = ({
+	className = 'w-10 h-10 text-lg',
+	'aria-label': ariaLabel = 'Next',
+	...args
+}) => {
 	return (
 		<button
+			type="button"
+			aria-label={ariaLabel}
 			className={`NextBtn ${className} inline-flex items-center justify-center rounded-full border border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-600 dark:bg-neutral-900 dark:hover:border-neutral-500 ${twFocusClass()}`}
 			{...args}
 		>
-			<ChevronRightIcon className="h-5 w-5 rtl:rotate-180" />
+			<ChevronRightIcon className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
 		</button>
 	)
 }
