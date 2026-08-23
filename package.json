@@ -15,6 +15,14 @@
     "tsc": "tsc"
   },
   "prettier": "@epic-web/config/prettier",
+  "browserslist": [
+    "chrome >= 92",
+    "firefox >= 90",
+    "safari >= 15",
+    "edge >= 92",
+    "not dead",
+    "not op_mini all"
+  ],
   "dependencies": {
     "@apollo/client": "3.13.8",
     "@faustwp/blocks": "^6.1.5",
