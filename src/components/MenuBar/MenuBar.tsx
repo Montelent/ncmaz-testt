@@ -37,6 +37,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ menuItems }) => {
 						<div
 							className="fixed inset-0 bg-neutral-900 bg-opacity-50"
 							onClick={handleCloseMenu}
+							aria-hidden="true"
 						/>
 					</TransitionChild>
 
@@ -68,12 +69,15 @@ const MenuBar: React.FC<MenuBarProps> = ({ menuItems }) => {
 	return (
 		<div>
 			<button
+				type="button"
 				onClick={() => {
 					setIsVisable(!isVisable)
 				}}
+				aria-label={isVisable ? 'Close menu' : 'Open menu'}
+				aria-expanded={isVisable}
 				className="flex items-center justify-center rounded-lg p-2.5 text-neutral-700 focus:outline-none dark:text-neutral-300"
 			>
-				<Bars3Icon className="h-7 w-7 lg:h-8 lg:w-8" />
+				<Bars3Icon className="h-7 w-7 lg:h-8 lg:w-8" aria-hidden="true" />
 			</button>
 
 			{renderContent()}
