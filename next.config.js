@@ -133,6 +133,13 @@ module.exports = withFaust({
 
 	async redirects() {
 		return [
+			// Canonical host: www → apex (301)
+			{
+				source: '/:path*',
+				has: [{ type: 'host', value: 'www.sammyguru.online' }],
+				destination: 'https://sammyguru.online/:path*',
+				permanent: true,
+			},
 			{
 				source: '/terms',
 				destination: '/tos/',
