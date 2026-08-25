@@ -54,7 +54,10 @@ export const GET_POSTS_FIRST_COMMON = 16
 export const GET_USERS_FIRST_COMMON = 10
 export const GET_CATEGORIES_FIRST_COMMON = 15
 
-//
-export const REVALIDATE_TIME = 900
+/**
+ * ISR interval (seconds). Higher = fewer GraphQL hits to WordPress.
+ * 1800 = 30 minutes. Tune 600–3600 based on how fresh content must be.
+ */
+export const REVALIDATE_TIME = 1800
 
 export { avatarColors }
