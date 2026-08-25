@@ -55,7 +55,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 	const T = getTrans()
 	const { discussion_settings } = NC_SITE_SETTINGS
 	const mustLoggedToComment = discussion_settings?.must_logged_in_to_comment
-	//
 	const client = getApolloAuthClient()
 	const { isReady, isAuthenticated } = useSelector(
 		(state: RootState) => state.viewer.authorizedUser,
@@ -68,9 +67,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 
 	const commentCount = commentCountOkFromStore || commentCountProp
 
-	const [refetchTimes, setRefetchTimes] = useState(0)
-
-	//
 	const [isReplyingDatabaseId, setIsReplyingDatabaseId] = useState<
 		number | null
 	>()
@@ -81,7 +77,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		number | null
 	>()
 
-	//
 	const [isOpenReplyFormWithId, setIsOpenReplyFormWithId] = useState<
 		number | null
 	>()
@@ -92,7 +87,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		number | null
 	>()
 
-	//
 	const [deletedCommentIds, setDeletedCommentIds] = useState<number[]>([])
 	const [listNewCommentCreated, setListNewCommentCreated] = useState<
 		TCommentHasChild[]
@@ -101,11 +95,16 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		TCommentHasChild[]
 	>([])
 
-	//
+	/**
+	 * cache-first avoids a network round-trip when Apollo already has comments.
+	 * first: 20 + load-more reduces payload vs fetching 40 every visit.
+	 * No automatic onError refetch loop (that multiplied POSTs during WP 503s).
+	 */
 	const { data, fetchMore, loading, error, called, refetch } = useQuery(
 		QUERY_GET_COMMENTS_BY_POST_ID,
 		{
-			fetchPolicy: 'cache-and-network',
+			fetchPolicy: 'cache-first',
+			nextFetchPolicy: 'cache-first',
 			notifyOnNetworkStatusChange: true,
 			context: {
 				fetchOptions: {
@@ -113,16 +112,11 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 				},
 			},
 			variables: {
-				first: 40,
+				first: 20,
 				contentId: postDatabaseId.toString(),
 			},
-			onError: (error) => {
-				if (refetchTimes > 3) {
-					errorHandling(error)
-					return
-				}
-				setRefetchTimes(refetchTimes + 1)
-				refetch()
+			onError: (err) => {
+				errorHandling(err)
 			},
 		},
 	)
@@ -170,7 +164,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		setIsOpenDeleteModalWithId(comment.databaseId)
 	const closeModalDeleteComment = () => setIsOpenDeleteModalWithId(null)
 
-	// handle delete comment
 	useEffect(() => {
 		if (!isDeletingDatabaseId || !deleteCommentsByIdResult.called) {
 			return
@@ -202,7 +195,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		}
 	}, [deleteCommentsByIdResult.loading])
 
-	// handle create new comment
 	useEffect(() => {
 		if (!createNewCommentsResult.called) {
 			return
@@ -285,7 +277,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		}
 	}, [createNewCommentsResult.loading])
 
-	// handle create new reply comment
 	useEffect(() => {
 		if (!createNewReplyCommentsResult.called || !isOpenReplyFormWithId) {
 			return
@@ -366,7 +357,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		}
 	}, [createNewReplyCommentsResult.loading])
 
-	// handle update a comment
 	useEffect(() => {
 		if (!updateCommentByIdResult.called || !isEditingDatabaseId) {
 			return
@@ -413,7 +403,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 		}
 	}, [updateCommentByIdResult.loading])
 
-	//
 	const handleLoadmoreComments = () => {
 		fetchMore({
 			variables: {
@@ -474,16 +463,12 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 			})
 	}
 
-	// caculate data flat
 	const aDataHandled = useMemo(() => {
-		// handle caculate comment data list
 		const nodes = (data?.comments?.nodes ||
 			[]) as NcmazFcCommentFullFieldsFragment[]
 
-		// add new comment created
 		let dataActual = [...nodes, ...listNewCommentCreated]
 
-		// add new comment updated
 		dataActual = dataActual.map((item) => {
 			const itemUpdated = listCommentUpdated.find(
 				(c) => c.databaseId === item.databaseId,
@@ -491,7 +476,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 			return itemUpdated ? itemUpdated : item
 		})
 
-		// add fake comment to show reply form
 		if (
 			isOpenReplyFormWithId &&
 			(mustLoggedToComment ? viewer?.databaseId : true)
@@ -528,7 +512,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 			]
 		}
 
-		// remove deleted comment -- cai nay phai lam sau phan add new comment
 		dataActual = dataActual?.filter(
 			(item) => !deletedCommentIds.includes(item?.databaseId),
 		)
@@ -598,7 +581,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 			}}
 		>
 			<div>
-				{/* COMMENT FORM */}
 				<div className="mx-auto max-w-screen-md pt-5">
 					<h3
 						id="nc-single-comment"
@@ -616,7 +598,6 @@ const SingleCommentWrap: FC<SingleCommentWrapProps> = ({
 
 				{renderComments()}
 
-				{/* -------------------modal---------------------- */}
 				<ModalEditComment
 					show={!!isOpenEditModalWithId}
 					onCloseModalEditComment={closeModalEditComment}
