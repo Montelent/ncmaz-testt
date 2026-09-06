@@ -47,7 +47,13 @@ export async function myGetPaths() {
 	}
 
 	return posts.map((page) => ({
-		params: { wordpressNode: [page.slug] },
+		// wordpressNode is a catch-all segment array — split multi-part
+		// slugs (e.g. "category/how-to") into individual segments so
+		// Next.js builds /category/how-to/ instead of encoding the
+		// slash as %2F inside a single segment.
+		params: {
+			wordpressNode: page.slug.split('/').filter(Boolean),
+		},
 	}))
 }
 
