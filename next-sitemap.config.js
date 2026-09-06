@@ -22,6 +22,7 @@ module.exports = {
 		'/ncmaz_for_ncmazfc_preview_blocks',
 		'/api/*',
 		'/server-sitemap.xml',
+		'/wordpress-sitemap.xml',
 	],
 	robotsTxtOptions: {
 		policies: [
