@@ -68,7 +68,7 @@ module.exports = withFaust({
 			},
 			{
 				protocol: 'https',
-				hostname: 'bd.sammyguru.online',
+				hostname: 'bd.samsverge.cc',
 				port: '',
 				pathname: '/**',
 			},
@@ -136,8 +136,8 @@ module.exports = withFaust({
 			// Canonical host: www → apex (301)
 			{
 				source: '/:path*',
-				has: [{ type: 'host', value: 'www.sammyguru.online' }],
-				destination: 'https://sammyguru.online/:path*',
+				has: [{ type: 'host', value: 'www.samsverge.cc' }],
+				destination: 'https://samsverge.cc/:path*',
 				permanent: true,
 			},
 			{
