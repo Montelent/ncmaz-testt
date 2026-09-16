@@ -44,34 +44,34 @@ function frontendHostname(): string {
 }
 
 /**
- * Rewrite any absolute URL that points at the WP backend to the public frontend.
- * Media under /wp-content/ stays on the backend host.
+ * Force public URLs onto NEXT_PUBLIC_URL.
+ * Rank Math / WP often still emit old domains (e.g. previous Site Address).
+ * Any host that is not the current frontend is rewritten to frontend + path.
+ * /wp-content/ media stays on the CMS host.
  */
 function toFrontendUrl(url?: string | null): string | undefined {
 	if (!url) return undefined
 	const frontend = getFrontend()
-	const backend = getBackend()
 	if (!frontend) return url
+	// Keep media on backend CDN / uploads host
 	if (url.includes('/wp-content/')) return url
 
-	let out = url
-
-	if (backend && out.startsWith(backend)) {
-		return frontend + out.slice(backend.length)
-	}
-
 	try {
-		if (backend) {
-			const bh = new URL(backend).hostname
-			const fh = new URL(frontend).hostname
-			if (out.includes(bh)) {
-				out = out.split(bh).join(fh)
-			}
+		const base = new URL(frontend)
+		const u = new URL(url, frontend)
+		const sameHost =
+			u.hostname === base.hostname ||
+			u.hostname === 'www.' + base.hostname ||
+			'www.' + u.hostname === base.hostname
+		if (sameHost) {
+			// Normalize origin (https + preferred host from env)
+			return base.origin + u.pathname + u.search + u.hash
 		}
+		// Different host (old domain, bd. CMS, etc.) → public frontend
+		return base.origin + u.pathname + u.search + u.hash
 	} catch {
-		/* ignore */
+		return url
 	}
-	return out
 }
 
 /**
