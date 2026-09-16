@@ -21,27 +21,16 @@ export type RankMathSeo = {
 	} | null
 }
 
-/** Canonical public frontend — never leave blank or point at old domain. */
-const DEFAULT_FRONTEND = 'https://samsverge.cc'
-const LEGACY_HOSTS = [
-	'sammyguru.online',
-	'www.sammyguru.online',
-	'bd.sammyguru.online',
-]
-
+/**
+ * Public frontend URL for canonical / og:url.
+ * Always set NEXT_PUBLIC_URL in Vercel (e.g. https://samsverge.cc).
+ * Changing domain = change that env var + redeploy — no code edit needed.
+ */
 function getFrontend(): string {
-	const raw = (process.env.NEXT_PUBLIC_URL || DEFAULT_FRONTEND).replace(/\/$/, '')
-	try {
-		const host = new URL(raw).hostname.replace(/^www\./, '')
-		if (host === 'sammyguru.online' || host.endsWith('.sammyguru.online')) {
-			return DEFAULT_FRONTEND
-		}
-	} catch {
-		return DEFAULT_FRONTEND
-	}
-	return raw || DEFAULT_FRONTEND
+	return (process.env.NEXT_PUBLIC_URL || '').replace(/\/$/, '')
 }
 
+/** WordPress / CMS origin (e.g. https://bd.samsverge.cc). */
 function getBackend(): string {
 	return (process.env.NEXT_PUBLIC_WORDPRESS_URL || '').replace(/\/$/, '')
 }
@@ -50,24 +39,27 @@ function frontendHostname(): string {
 	try {
 		return new URL(getFrontend()).hostname.replace(/^www\./, '')
 	} catch {
-		return 'samsverge.cc'
+		return 'site'
 	}
 }
 
+/**
+ * Rewrite any absolute URL that points at the WP backend to the public frontend.
+ * Media under /wp-content/ stays on the backend host.
+ */
 function toFrontendUrl(url?: string | null): string | undefined {
 	if (!url) return undefined
 	const frontend = getFrontend()
 	const backend = getBackend()
+	if (!frontend) return url
 	if (url.includes('/wp-content/')) return url
+
 	let out = url
-	for (const host of LEGACY_HOSTS) {
-		out = out.split('https://' + host).join(frontend)
-		out = out.split('http://' + host).join(frontend)
-		out = out.split('//' + host).join('//' + new URL(frontend).hostname)
-	}
-	if (frontend && backend && out.startsWith(backend)) {
+
+	if (backend && out.startsWith(backend)) {
 		return frontend + out.slice(backend.length)
 	}
+
 	try {
 		if (backend) {
 			const bh = new URL(backend).hostname
@@ -82,26 +74,31 @@ function toFrontendUrl(url?: string | null): string | undefined {
 	return out
 }
 
+/**
+ * og:site_name = public brand/host, never the WP backend hostname.
+ */
 function toFrontendSiteName(name?: string | null): string {
 	const frontend = getFrontend()
 	const backend = getBackend()
 	const fallback = frontendHostname()
+
 	if (!name || !String(name).trim()) {
 		return fallback
 	}
+
 	let out = String(name).trim()
+
 	if (backend) {
 		out = out.split(backend).join(frontend || fallback)
-	}
-	try {
-		if (backend) {
+		try {
 			const bh = new URL(backend).hostname
 			const fh = frontend ? new URL(frontend).hostname : fallback
 			out = out.split(bh).join(fh)
+		} catch {
+			/* ignore */
 		}
-	} catch {
-		/* ignore */
 	}
+
 	if (/^https?:\/\//i.test(out)) {
 		try {
 			return new URL(frontend || out).hostname.replace(/^www\./, '')
@@ -109,9 +106,7 @@ function toFrontendSiteName(name?: string | null): string {
 			return fallback
 		}
 	}
-	if (/bd\.sammyguru\.online|sammyguru\.online/i.test(out)) {
-		return fallback
-	}
+
 	return out || fallback
 }
 

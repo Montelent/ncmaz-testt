@@ -11,7 +11,6 @@ module.exports = withFaust({
 	compress: true,
 	poweredByHeader: false,
 
-	// Smaller production JS (no console noise in client bundles)
 	compiler: {
 		removeConsole:
 			process.env.NODE_ENV === 'production'
@@ -19,14 +18,12 @@ module.exports = withFaust({
 				: false,
 	},
 
-	// Tree-shake heavy packages when imported as `import { x } from 'lodash'`
 	modularizeImports: {
 		lodash: {
 			transform: 'lodash/{{member}}',
 		},
 	},
 
-	// Shared Hostinger: WP GraphQL can 503 under parallel SSG.
 	staticPageGenerationTimeout: 180,
 	experimental: {
 		staticGenerationRetryCount: 5,
@@ -39,12 +36,6 @@ module.exports = withFaust({
 		],
 	},
 
-	/**
-	 * CRITICAL for Hostinger shared Node RAM:
-	 * `/_next/image` was fetching + re-encoding remote WP images (bd.samsverge.cc)
-	 * under crawler bursts → high RAM/I/O → intermittent 503s.
-	 * unoptimized: serve original image URLs (browser/CDN cache) — no server-side resize.
-	 */
 	images: {
 		unoptimized: true,
 		remotePatterns: [
@@ -133,20 +124,7 @@ module.exports = withFaust({
 
 	async redirects() {
 		return [
-			// Legacy domain → current production domain (301)
-			{
-				source: '/:path*',
-				has: [{ type: 'host', value: 'sammyguru.online' }],
-				destination: 'https://samsverge.cc/:path*',
-				permanent: true,
-			},
-			{
-				source: '/:path*',
-				has: [{ type: 'host', value: 'www.sammyguru.online' }],
-				destination: 'https://samsverge.cc/:path*',
-				permanent: true,
-			},
-			// Canonical host: www → apex (301)
+			// Path aliases only — host/domain redirects belong in Cloudflare DNS
 			{
 				source: '/:path*',
 				has: [{ type: 'host', value: 'www.samsverge.cc' }],
