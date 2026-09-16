@@ -41,7 +41,7 @@ module.exports = withFaust({
 
 	/**
 	 * CRITICAL for Hostinger shared Node RAM:
-	 * `/_next/image` was fetching + re-encoding remote WP images (bd.sammyguru.online)
+	 * `/_next/image` was fetching + re-encoding remote WP images (bd.samsverge.cc)
 	 * under crawler bursts → high RAM/I/O → intermittent 503s.
 	 * unoptimized: serve original image URLs (browser/CDN cache) — no server-side resize.
 	 */
@@ -133,6 +133,19 @@ module.exports = withFaust({
 
 	async redirects() {
 		return [
+			// Legacy domain → current production domain (301)
+			{
+				source: '/:path*',
+				has: [{ type: 'host', value: 'sammyguru.online' }],
+				destination: 'https://samsverge.cc/:path*',
+				permanent: true,
+			},
+			{
+				source: '/:path*',
+				has: [{ type: 'host', value: 'www.sammyguru.online' }],
+				destination: 'https://samsverge.cc/:path*',
+				permanent: true,
+			},
 			// Canonical host: www → apex (301)
 			{
 				source: '/:path*',

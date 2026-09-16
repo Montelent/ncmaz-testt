@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 
-const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://sammyguru.online'
+const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://samsverge.cc'
 
 module.exports = {
 	siteUrl: SITE_URL,
