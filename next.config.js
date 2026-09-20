@@ -142,6 +142,11 @@ module.exports = withFaust({
 				permanent: true,
 			},
 			{
+	source: '/sitemap-0.xml',
+	destination: '/sitemap.xml',
+	permanent: true,
+},
+			{
 				source: '/terms-of-use',
 				destination: '/tos/',
 				permanent: true,
