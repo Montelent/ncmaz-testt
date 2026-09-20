@@ -32,7 +32,7 @@ const SectionGridPosts: FC<SectionGridPostsProps> = ({
 	className = '',
 	gridClass = 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
 }) => {
-	const renderCard = (post: TPostCard) => {
+	const renderCard = (post: TPostCard, index: number) => {
 		const { databaseId: postId } = post
 		switch (postCardName) {
 			case 'card3':
@@ -48,7 +48,7 @@ const SectionGridPosts: FC<SectionGridPostsProps> = ({
 			case 'card10V2':
 				return <Card10V2 key={postId} post={post} />
 			case 'card11':
-				return <Card11 key={postId} post={post} />
+				return <Card11 key={postId} post={post} priority={index === 0} />
 			case 'card14':
 				return <Card14 key={postId} post={post} />
 			case 'card15Podcast':
@@ -61,7 +61,7 @@ const SectionGridPosts: FC<SectionGridPostsProps> = ({
 	return (
 		<div className={`nc-SectionGridPosts relative ${className}`}>
 			<div className={`grid gap-6 md:gap-x-7 md:gap-y-8 ${gridClass}`}>
-				{posts.map(renderCard)}
+				{posts.map((post, index) => renderCard(post, index))}
 			</div>
 		</div>
 	)
