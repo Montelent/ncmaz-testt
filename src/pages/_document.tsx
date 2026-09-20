@@ -26,6 +26,8 @@ export default class Document extends NextDocument {
 				dir={process.env.NEXT_PUBLIC_SITE_DIRECTION}
 			>
 				<Head>
+					<link rel="preconnect" href="https://bd.samsverge.cc" crossOrigin="anonymous" />
+<link rel="dns-prefetch" href="https://bd.samsverge.cc" />
 					<link
 						href={`${SITE_URL}/api/feeds/feed.json`}
 						rel="alternate"
