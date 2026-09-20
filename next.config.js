@@ -192,6 +192,16 @@ imageSizes: [64, 128, 256, 384],
 		]
 	},
 
+
+	async rewrites() {
+		return [
+			{
+				source: '/llms.txt',
+				destination: '/api/llms',
+			},
+		]
+	},
+	
 	async headers() {
 		return [
 			{
