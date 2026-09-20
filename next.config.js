@@ -37,7 +37,10 @@ module.exports = withFaust({
 	},
 
 	images: {
-		unoptimized: true,
+		formats: ['image/avif', 'image/webp'],
+minimumCacheTTL: 2678400,
+deviceSizes: [360, 414, 640, 768, 1024, 1280],
+imageSizes: [64, 128, 256, 384],
 		remotePatterns: [
 			{
 				protocol: 'http',
