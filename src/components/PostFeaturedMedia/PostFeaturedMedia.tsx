@@ -14,12 +14,14 @@ export interface PostFeaturedMediaProps {
 	className?: string
 	post: PostDataFragmentType
 	isHover?: boolean
+	priority?: boolean
 }
 
 const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
 	className = 'w-full h-full',
 	post,
 	isHover = false,
+	priority = false,
 }) => {
 	const {
 		title,
@@ -96,6 +98,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
 					className="object-cover"
 					src={featuredImage?.sourceUrl || ''}
 					sizes="(max-width: 600px) 480px, 800px"
+					priority={priority}
 				/>
 			)}
 			{renderContent()}
