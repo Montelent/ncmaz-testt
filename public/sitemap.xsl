@@ -10,7 +10,7 @@
     <html lang="en">
       <head>
         <meta charset="utf-8"/>
-        <title>SammyGuru Sitemap</title>
+        <title>SamsVerge Sitemap</title>
         <style type="text/css">
           body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; background: #f8fafc; color: #0f172a; }
           h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
@@ -21,39 +21,59 @@
           tr:hover td { background: #f1f5f9; }
           a { color: #2563eb; text-decoration: none; }
           a:hover { text-decoration: underline; }
-          .pri { font-variant-numeric: tabular-nums; }
         </style>
       </head>
       <body>
-        <h1>SammyGuru XML Sitemap</h1>
-        <p class="meta">
-          <xsl:value-of select="count(//s:url)"/> URLs in this sitemap
-          · For search engines; styled for easier reading
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>URL</th>
-              <th>Last modified</th>
-              <th>Change frequency</th>
-              <th>Priority</th>
-            </tr>
-          </thead>
-          <tbody>
-            <xsl:for-each select="//s:url">
+        <h1>SamsVerge XML Sitemap</h1>
+
+        <xsl:if test="s:urlset">
+          <p class="meta">
+            <xsl:value-of select="count(s:urlset/s:url)"/> URLs in this sitemap
+            · For search engines; styled for easier reading
+          </p>
+          <table>
+            <thead>
               <tr>
-                <td>
-                  <a href="{s:loc}">
-                    <xsl:value-of select="s:loc"/>
-                  </a>
-                </td>
-                <td><xsl:value-of select="s:lastmod"/></td>
-                <td><xsl:value-of select="s:changefreq"/></td>
-                <td class="pri"><xsl:value-of select="s:priority"/></td>
+                <th>URL</th>
+                <th>Last modified</th>
               </tr>
-            </xsl:for-each>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <xsl:for-each select="s:urlset/s:url">
+                <tr>
+                  <td>
+                    <a href="{s:loc}"><xsl:value-of select="s:loc"/></a>
+                  </td>
+                  <td><xsl:value-of select="s:lastmod"/></td>
+                </tr>
+              </xsl:for-each>
+            </tbody>
+          </table>
+        </xsl:if>
+
+        <xsl:if test="s:sitemapindex">
+          <p class="meta">
+            <xsl:value-of select="count(s:sitemapindex/s:sitemap)"/> sitemaps in this index
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Sitemap</th>
+                <th>Last modified</th>
+              </tr>
+            </thead>
+            <tbody>
+              <xsl:for-each select="s:sitemapindex/s:sitemap">
+                <tr>
+                  <td>
+                    <a href="{s:loc}"><xsl:value-of select="s:loc"/></a>
+                  </td>
+                  <td><xsl:value-of select="s:lastmod"/></td>
+                </tr>
+              </xsl:for-each>
+            </tbody>
+          </table>
+        </xsl:if>
       </body>
     </html>
   </xsl:template>
