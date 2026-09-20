@@ -63,6 +63,41 @@ export default function NcmazFaustBlockCtaClient(props: Props) {
 		},
 	)
 
+	// Accessibility: the WordPress-rendered form has an icon-only submit button
+	// and an unlabeled email input. Give them accessible names so screen readers
+	// and AI agents can identify them.
+	useEffect(() => {
+		const formNode = blockRef.current?.querySelector(
+			'.ncmazfaust-block-CTA__subcribe_form',
+		)
+		if (!formNode) {
+			return
+		}
+
+		const submitButton = formNode.querySelector<HTMLButtonElement>(
+			"button[type='submit']",
+		)
+		if (
+			submitButton &&
+			!submitButton.getAttribute('aria-label') &&
+			!submitButton.textContent?.trim()
+		) {
+			submitButton.setAttribute('aria-label', 'Subscribe')
+			submitButton.querySelector('svg')?.setAttribute('aria-hidden', 'true')
+		}
+
+		const emailInput =
+			formNode.querySelector<HTMLInputElement>("input[type='email']")
+		if (
+			emailInput &&
+			!emailInput.getAttribute('aria-label') &&
+			!emailInput.getAttribute('aria-labelledby') &&
+			!emailInput.id
+		) {
+			emailInput.setAttribute('aria-label', 'Email address')
+		}
+	}, [renderedHtml])
+
 	useEffect(() => {
 		if (!called) {
 			return
@@ -98,7 +133,7 @@ export default function NcmazFaustBlockCtaClient(props: Props) {
 			return
 		}
 
-		subcribeFormNode.addEventListener('submit', (e) => {
+		const handleSubmit = (e: Event) => {
 			e.preventDefault()
 			const email = subcribeFormNode.querySelector<HTMLInputElement>(
 				"input[type='email']",
@@ -117,7 +152,12 @@ export default function NcmazFaustBlockCtaClient(props: Props) {
 					user_email: email,
 				},
 			})
-		})
+		}
+
+		subcribeFormNode.addEventListener('submit', handleSubmit)
+		return () => {
+			subcribeFormNode.removeEventListener('submit', handleSubmit)
+		}
 	}, [blockRef])
 
 	return (
