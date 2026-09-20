@@ -19,11 +19,11 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "selector",
   safelist: [
+    { pattern: /grid-cols-(1|2|3|4|5)/ },
+    { pattern: /pb-(5|6|7|8|9|10)/ },
     {
-      pattern: /grid-cols-(1|2|3|4|5)/,
-      pattern: /pb-(5|6|7|8|9|10)/,
       pattern:
-        /bg-(green|blue|red|indigo|pink|rose|yellow)-(50|500|600|800|900|)/,
+        /bg-(green|blue|red|indigo|pink|rose|yellow)-(50|500|600|800|900)/,
     },
   ],
   theme: {
