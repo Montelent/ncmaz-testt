@@ -131,6 +131,15 @@ export type ContentNode = {
 	dateGmt?: string | null
 }
 
+type ContentNodesResult = {
+	data?: {
+		contentNodes?: {
+			pageInfo?: { hasNextPage?: boolean; endCursor?: string | null }
+			nodes?: ContentNode[]
+		}
+	}
+}
+
 // Paginate through every published node of the given content types.
 // Iterative (not recursive) so large sites don't grow the call stack.
 export async function fetchContentNodes(
@@ -141,22 +150,25 @@ export async function fetchContentNodes(
 	let after: string | null = null
 
 	while (true) {
-		const { data } = await client.query({
+		const result: ContentNodesResult = await client.query({
 			query: CONTENT_QUERY,
 			variables: { types, after },
 			fetchPolicy: 'no-cache',
 		})
-		const conn = data?.contentNodes
+
+		const conn = result.data?.contentNodes
 		if (!conn) break
 		all.push(...(conn.nodes || []))
 		if (!conn.pageInfo?.hasNextPage) break
-		after = conn.pageInfo.endCursor
+		after = conn.pageInfo.endCursor ?? null
 	}
 
 	return all
 }
 
-export function newestLastmod(dates: Array<string | undefined>): string | undefined {
+export function newestLastmod(
+	dates: Array<string | undefined>,
+): string | undefined {
 	const valid = dates.filter((d): d is string => !!d).sort()
 	return valid.length ? valid[valid.length - 1] : undefined
 }
