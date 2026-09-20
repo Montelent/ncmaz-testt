@@ -3,17 +3,16 @@
   "private": true,
   "version": "3.1.4",
   "description": "Faust is a framework that aims to make headless WordPress as streamlined as classic WordPress for both developers and publishers.",
-  "scripts": {
-    "dev": "npm run generate && concurrently \"faust dev\" \"npm run watch-codegen\"",
-    "build": "faust build",
-    "postbuild": "next-sitemap",
-    "generate": "faust generatePossibleTypes",
-    "start": "faust start",
-    "codegen": "graphql-codegen",
-    "watch-codegen": "graphql-codegen -w",
-    "wc": "graphql-codegen -w",
-    "tsc": "tsc"
-  },
+"scripts": {
+  "dev": "npm run generate && concurrently \"faust dev\" \"npm run watch-codegen\"",
+  "build": "faust build",
+  "generate": "faust generatePossibleTypes",
+  "start": "faust start",
+  "codegen": "graphql-codegen",
+  "watch-codegen": "graphql-codegen -w",
+  "wc": "graphql-codegen -w",
+  "tsc": "tsc"
+},
   "prettier": "@epic-web/config/prettier",
   "browserslist": [
     "chrome >= 92",
@@ -59,8 +58,7 @@
     "lodash": "^4.18.0",
     "next": "^15.5.21",
     "next-secure-headers": "^2.2.0",
-    "next-seo": "^6.6.0",
-    "next-sitemap": "^4.2.3",
+    "next-seo": "^6.6.0"
     "nextjs-google-analytics": "^2.3.3",
     "nextjs-progressbar": "^0.0.16",
     "postcss": "^8.5.18",
