@@ -4,8 +4,8 @@ import NextDocument, { Html, Head, Main, NextScript } from 'next/document'
 const FAVICON_VERSION = 5
 const SITE_URL = process.env.NEXT_PUBLIC_URL
 const SITE_TITLE =
-	NC_SITE_SETTINGS.site_info?.site_title || 'SammyGuru'
-const APP_NAME = 'SammyGuru'
+	NC_SITE_SETTINGS.site_info?.site_title || 'SamsVerge'
+const APP_NAME = 'SamsVerge'
 
 function v(href: string) {
 	return `${href}?v=${FAVICON_VERSION}`
