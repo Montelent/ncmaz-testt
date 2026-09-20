@@ -34,3 +34,6 @@ Disallow: /api/
 # Sitemaps
 Sitemap: https://samsverge.cc/sitemap.xml
 Sitemap: https://samsverge.cc/sitemap-news.xml
+
+# LLM-friendly site summary
+# https://samsverge.cc/llms.txt
