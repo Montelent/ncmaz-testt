@@ -24,6 +24,15 @@ const CATEGORIES_QUERY = gql`
 	}
 `
 
+type CategoriesResult = {
+	data?: {
+		categories?: {
+			pageInfo?: { hasNextPage?: boolean; endCursor?: string | null }
+			nodes?: Array<{ uri?: string | null } | null>
+		}
+	}
+}
+
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
 	const client = getApolloClient()
 	const uris: string[] = []
@@ -31,18 +40,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
 	try {
 		while (true) {
-			const { data } = await client.query({
+			const result: CategoriesResult = await client.query({
 				query: CATEGORIES_QUERY,
 				variables: { after },
 				fetchPolicy: 'no-cache',
 			})
-			const conn = data?.categories
+
+			const conn = result.data?.categories
 			if (!conn) break
 			for (const n of conn.nodes || []) {
 				if (n?.uri) uris.push(n.uri)
 			}
 			if (!conn.pageInfo?.hasNextPage) break
-			after = conn.pageInfo.endCursor
+			after = conn.pageInfo.endCursor ?? null
 		}
 	} catch (e) {
 		console.error('Category sitemap error', e)
