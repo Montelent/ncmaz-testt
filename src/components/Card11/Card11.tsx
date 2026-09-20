@@ -13,6 +13,7 @@ import { getPostDataFromPostFragment } from '@/utils/getPostDataFromPostFragment
 export interface Card11Props extends CommonPostCardProps {
 	ratio?: string
 	hiddenAuthor?: boolean
+	priority?: boolean
 }
 
 const Card11: FC<Card11Props> = ({
@@ -20,6 +21,7 @@ const Card11: FC<Card11Props> = ({
 	post,
 	hiddenAuthor = false,
 	ratio = 'aspect-w-4 aspect-h-3',
+	priority = false,
 }) => {
 	const {
 		title,
@@ -45,7 +47,11 @@ const Card11: FC<Card11Props> = ({
 				className={`relative z-10 block w-full flex-shrink-0 overflow-hidden rounded-t-3xl ${ratio}`}
 			>
 				<div>
-					<PostFeaturedMedia post={post} isHover={isHover} />
+					<PostFeaturedMedia
+						post={post}
+						isHover={isHover}
+						priority={priority}
+					/>
 				</div>
 			</div>
 			<Link href={uri || ''} className="absolute inset-0"></Link>
