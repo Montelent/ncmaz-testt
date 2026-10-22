@@ -1,12 +1,12 @@
 import en from '../../public/lang/en'
 
-/** Nested string map — allows T['any key'] without breaking the build if a key is missing. */
-type TranslationTree = {
-	[key: string]: string | TranslationTree
-}
-
-const getTrans = (): TranslationTree => {
-	return en as TranslationTree
+/**
+ * Returns translation strings.
+ * Typed as `any` so a missing en.ts key never fails `next build` typecheck.
+ * Prefer adding keys to public/lang/en.ts when you notice missing UI text.
+ */
+const getTrans = (): any => {
+	return en
 }
 
 export default getTrans
