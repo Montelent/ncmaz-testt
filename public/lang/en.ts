@@ -217,7 +217,7 @@ export default {
 	'Discover other tags': 'Discover other tags',
 	'Show less': 'Show less',
 	'Show more': 'Show more',
-	'Login': 'Login',
+	Login: 'Login',
 	'Email address': 'Email address',
 	'Email or username': 'Email or username',
 	'Email or username are required!': 'Email or username are required!',
@@ -267,17 +267,17 @@ export default {
 	'Post moved to trash': 'Post moved to trash',
 	'Post restored': 'Post restored',
 	'Copy link successfully': 'Copy link successfully',
-	pageSearch: {
-		'Type and press enter': 'Type and press enter',
-		Recommended: 'Recommended',
-	},
-	pageSingle: {
-		Published: 'Published',
-	},
+	'Your account has been created successfully! However, it needs to be approved by the administrator before it will be displayed.':
+		'Your account has been created successfully! However, it needs to be approved by the administrator before it will be displayed.',
 	pageSubmission: {
-		'Choose categories and tags': 'Choose categories and tags',
-		'Post title': 'Post title',
-		'Post content': 'Post content',
+		'Revert new changes': 'Revert new changes',
+		'Choose the post style. Only applies to Standard format!':
+			'Choose the post style. Only applies to Standard format!',
+		'Post style': 'Post style',
+		'Show right sidebar': 'Show right sidebar',
+		'Alt text (alternative text)': 'Alt text (alternative text)',
+		'Image URL': 'Image URL',
+		'Youtube URL': 'Youtube URL',
 		'Update post successfully': 'Update post successfully',
 		'Created new post successfully': 'Created new post successfully',
 		'Move to draft': 'Move to draft',
@@ -305,6 +305,7 @@ export default {
 		'The url is not an image, please try again.':
 			'The url is not an image, please try again.',
 		'Upload a file': 'Upload a file',
+		Re: 'Upload a file',
 		'Paste or type URL': 'Paste or type URL',
 		'Sorry this feature is not available yet. Please use the URL option.':
 			'Sorry this feature is not available yet. Please use the URL option.',
@@ -325,10 +326,9 @@ export default {
 		'Draft this post': 'Draft this post',
 		'Post will be changed to draft. You can publish it later.':
 			'Post will be changed to draft. You can publish it later.',
-		'Post style': 'Post style',
-		'Show right sidebar': 'Show right sidebar',
-		'Alt text (alternative text)': 'Alt text (alternative text)',
-		'Image URL': 'Image URL',
-		'Youtube URL': 'Youtube URL',
+	},
+	pageSearch: {
+		'Type and press enter': 'Type and press enter',
+		Recommended: 'Recommended',
 	},
 }
