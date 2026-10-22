@@ -19,7 +19,11 @@ export interface PostMeta2Props {
 	avatarRounded?: string
 }
 
-/** True when modified is meaningfully later than published (not the same-save noise). */
+/**
+ * Show Updated when the modified timestamp is later than published
+ * and the formatted date the reader sees is different (avoids
+ * "Oct 22 · Updated Oct 22" noise from same-day auto-saves).
+ */
 function hasMeaningfulUpdate(
 	date?: string | null,
 	modified?: string | null,
@@ -28,8 +32,11 @@ function hasMeaningfulUpdate(
 	const published = new Date(date).getTime()
 	const updated = new Date(modified).getTime()
 	if (Number.isNaN(published) || Number.isNaN(updated)) return false
-	// Show updated only if at least ~1 hour later (avoids same-save noise)
-	return updated - published >= 60 * 60 * 1000
+	if (updated <= published) return false
+	const publishedLabel = ncFormatDate(date)
+	const updatedLabel = ncFormatDate(modified)
+	if (!publishedLabel || !updatedLabel) return false
+	return publishedLabel !== updatedLabel
 }
 
 const PostMeta2: FC<PostMeta2Props> = ({
