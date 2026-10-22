@@ -1,8 +1,5 @@
+import { TPostCard } from '@/components/Card2/Card2'
 import { FragmentType, useFragment } from '../__generated__'
-import {
-	NcmazFcImageHasDetailFieldsFragment,
-	PostFormatNameType,
-} from '../__generated__/graphql'
 import {
 	NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
 	NC_POST_CARD_FRAGMENT,
@@ -10,26 +7,35 @@ import {
 	NC_POST_FULL_FRAGMENT,
 	NC_POST_META_DATA_FULL_FRAGMENT,
 } from '../fragments'
-import { TPostCard } from '@/components/Card2/Card2'
-import { FragmentTypePostFullFields } from '@/container/type'
 import { getCatgoryDataFromCategoryFragment } from './getCatgoryDataFromCategoryFragment'
 import { getTagDataFromTagFragment } from './getTagDataFromTagFragment'
 import { getUserDataFromUserCardFragment } from './getUserDataFromUserCardFragment'
+import { NcmazFcImageHasDetailFieldsFragment } from '@/__generated__/graphql'
+import { FragmentTypePostFullFields } from '@/container/type'
+
+export type PostFormatNameType =
+	| ''
+	| 'audio'
+	| 'gallery'
+	| 'video'
+	| 'aside'
+	| 'chat'
+	| 'image'
+	| 'quote'
+	| 'status'
+	| 'standard'
 
 export function getPostDataFromPostFragment(
 	post:
 		| FragmentType<typeof NC_POST_CARD_FRAGMENT>
-		| FragmentType<typeof NC_POST_FULL_FRAGMENT>
 		| FragmentType<typeof NC_POST_CARD_NOT_NCMAZGALLERY_FRAGMENT>
 		| FragmentTypePostFullFields
-		| TPostCard
-		| any,
+		| TPostCard,
 ) {
-	// Cast to any to avoid FragmentType resolving to `never` under strict TS + current codegen
 	const query = useFragment(
-		NC_POST_FULL_FRAGMENT as any,
-		post as any,
-	) as any
+		NC_POST_FULL_FRAGMENT,
+		post as FragmentType<typeof NC_POST_FULL_FRAGMENT>,
+	)
 
 	//
 	const postFormats = (
@@ -41,48 +47,48 @@ export function getPostDataFromPostFragment(
 	const postFormatsArr = query.postFormats?.nodes
 	//
 	const featuredImage = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.featuredImage?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.featuredImage?.node,
+	)
 	//
 	const ncPostMetaData = useFragment(
-		NC_POST_META_DATA_FULL_FRAGMENT as any,
-		query.ncPostMetaData as any,
-	) as any
+		NC_POST_META_DATA_FULL_FRAGMENT,
+		query.ncPostMetaData,
+	)
 
 	// ncmazGalleryImgs is a list of 8 images
 	const ncmazGalleryImg1 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image1?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image1?.node,
+	)
 	const ncmazGalleryImg2 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image2?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image2?.node,
+	)
 	const ncmazGalleryImg3 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image3?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image3?.node,
+	)
 	const ncmazGalleryImg4 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image4?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image4?.node,
+	)
 	const ncmazGalleryImg5 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image5?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image5?.node,
+	)
 	const ncmazGalleryImg6 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image6?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image6?.node,
+	)
 	const ncmazGalleryImg7 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image7?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image7?.node,
+	)
 	const ncmazGalleryImg8 = useFragment(
-		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT as any,
-		query.ncmazGalleryImgs?.image8?.node as any,
-	) as any
+		NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
+		query.ncmazGalleryImgs?.image8?.node,
+	)
 
 	const ncmazGalleryImgs = [
 		ncmazGalleryImg1,
@@ -111,12 +117,12 @@ export function getPostDataFromPostFragment(
 		ncPostMetaData,
 		ncmazGalleryImgs,
 		categories: {
-			nodes: query.categories?.nodes?.map((term: any) =>
+			nodes: query.categories?.nodes?.map((term) =>
 				getCatgoryDataFromCategoryFragment(term),
 			),
 		},
 		tags: {
-			nodes: query.tags?.nodes?.map((term: any) => getTagDataFromTagFragment(term)),
+			nodes: query.tags?.nodes?.map((term) => getTagDataFromTagFragment(term)),
 		},
 		author: getUserDataFromUserCardFragment({ ...query.author?.node }),
 		// @ts-ignore
