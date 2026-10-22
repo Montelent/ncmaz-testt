@@ -108,7 +108,6 @@ export function getPostDataFromPostFragment(
 		title: query.title || '',
 		excerpt: query.excerpt || '',
 		date: query.date || '',
-		modified: query.modified || '',
 		content: query.content || '',
 		postFormats,
 		postFormatSlug,
