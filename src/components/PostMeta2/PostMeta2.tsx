@@ -66,26 +66,22 @@ const PostMeta2: FC<PostMeta2Props> = ({
 							<div className="ms-0">
 								<span className="text-xs">🏷 </span>
 								{categories?.nodes?.map(
-									(
-										cat: { name?: string | null; uri?: string | null },
-										index: number,
-										arr: Array<{ name?: string | null; uri?: string | null }>,
-									) => (
-										<Link
-											key={cat.name}
-											href={cat.uri || ''}
-											className="font-semibold"
-										>
-											{cat.name}
-											{index < arr.length - 1 && <span>, </span>}
-										</Link>
-									),
-								)}
+  (cat: { name?: string | null; uri?: string | null }, index: number, arr: Array<{ name?: string | null; uri?: string | null }>) => (
+
+									<Link
+										key={cat.name}
+										href={cat.uri || ''}
+										className="font-semibold"
+									>
+										{cat.name}
+										{index < arr.length - 1 && <span>, </span>}
+									</Link>
+								))}
 							</div>
 						</>
 					)}
 				</div>
-				<div className="mt-[6px] text-xs">
+				<div className="mt-[6px] flex-wrap text-xs">
 					<span className="text-neutral-700 dark:text-neutral-300">
 						{ncFormatDate(date || '')}
 					</span>
