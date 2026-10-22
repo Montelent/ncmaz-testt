@@ -19,6 +19,19 @@ export interface PostMeta2Props {
 	avatarRounded?: string
 }
 
+/** True when modified is meaningfully later than published (not the same-save noise). */
+function hasMeaningfulUpdate(
+	date?: string | null,
+	modified?: string | null,
+): boolean {
+	if (!date || !modified) return false
+	const published = new Date(date).getTime()
+	const updated = new Date(modified).getTime()
+	if (Number.isNaN(published) || Number.isNaN(updated)) return false
+	// Show updated only if at least ~1 hour later (avoids same-save noise)
+	return updated - published >= 60 * 60 * 1000
+}
+
 const PostMeta2: FC<PostMeta2Props> = ({
 	className = 'leading-none',
 	post,
@@ -26,8 +39,10 @@ const PostMeta2: FC<PostMeta2Props> = ({
 	size = 'normal',
 	avatarRounded,
 }) => {
-	const { date, categories, author, ncPostMetaData } =
+	const { date, modified, categories, author, ncPostMetaData } =
 		getPostDataFromPostFragment(post)
+
+	const showUpdated = hasMeaningfulUpdate(date, modified)
 
 	return (
 		<div
@@ -81,10 +96,19 @@ const PostMeta2: FC<PostMeta2Props> = ({
 						</>
 					)}
 				</div>
-				<div className="mt-[6px] flex-wrap text-xs">
+				<div className="mt-[6px] flex flex-wrap items-center text-xs">
 					<span className="text-neutral-700 dark:text-neutral-300">
 						{ncFormatDate(date || '')}
 					</span>
+					{showUpdated ? (
+						<>
+							<span className="mx-2 font-semibold text-neutral-400">·</span>
+							<span className="text-neutral-700 dark:text-neutral-300">
+								{T['Updated'] ?? 'Updated'}{' '}
+								{ncFormatDate(modified || '')}
+							</span>
+						</>
+					) : null}
 					<span className="mx-2 font-semibold">·</span>
 					<span className="text-neutral-700 dark:text-neutral-300">
 						{ncPostMetaData?.readingTime} {T['min read'] ?? 'min read'}

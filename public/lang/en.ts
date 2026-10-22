@@ -98,6 +98,7 @@ export default {
 	Comments: 'Comments',
 	'Load more': 'Load more',
 	Published: 'Published',
+	Updated: 'Updated',
 	Pending: 'Pending',
 	Scheduled: 'Scheduled',
 	Draft: 'Draft',
