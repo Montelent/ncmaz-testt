@@ -1,9 +1,12 @@
-import en from "../../public/lang/en";
+import en from '../../public/lang/en'
 
-const getTrans = () => {
-  const trans = en;
+/** Nested string map — allows T['any key'] without breaking the build if a key is missing. */
+type TranslationTree = {
+	[key: string]: string | TranslationTree
+}
 
-  return trans;
-};
+const getTrans = (): TranslationTree => {
+	return en as TranslationTree
+}
 
-export default getTrans;
+export default getTrans
