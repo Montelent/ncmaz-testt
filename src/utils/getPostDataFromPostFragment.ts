@@ -1,5 +1,8 @@
-import { TPostCard } from '@/components/Card2/Card2'
 import { FragmentType, useFragment } from '../__generated__'
+import {
+	NcmazFcImageHasDetailFieldsFragment,
+	PostFormatNameType,
+} from '../__generated__/graphql'
 import {
 	NC_IMAGE_MEDIA_HAS_DETAIL_FRAGMENT,
 	NC_POST_CARD_FRAGMENT,
@@ -7,27 +10,16 @@ import {
 	NC_POST_FULL_FRAGMENT,
 	NC_POST_META_DATA_FULL_FRAGMENT,
 } from '../fragments'
+import { TPostCard } from '@/components/Card2/Card2'
+import { FragmentTypePostFullFields } from '@/container/type'
 import { getCatgoryDataFromCategoryFragment } from './getCatgoryDataFromCategoryFragment'
 import { getTagDataFromTagFragment } from './getTagDataFromTagFragment'
 import { getUserDataFromUserCardFragment } from './getUserDataFromUserCardFragment'
-import { NcmazFcImageHasDetailFieldsFragment } from '@/__generated__/graphql'
-import { FragmentTypePostFullFields } from '@/container/type'
-
-export type PostFormatNameType =
-	| ''
-	| 'audio'
-	| 'gallery'
-	| 'video'
-	| 'aside'
-	| 'chat'
-	| 'image'
-	| 'quote'
-	| 'status'
-	| 'standard'
 
 export function getPostDataFromPostFragment(
 	post:
 		| FragmentType<typeof NC_POST_CARD_FRAGMENT>
+		| FragmentType<typeof NC_POST_FULL_FRAGMENT>
 		| FragmentType<typeof NC_POST_CARD_NOT_NCMAZGALLERY_FRAGMENT>
 		| FragmentTypePostFullFields
 		| TPostCard
@@ -110,6 +102,7 @@ export function getPostDataFromPostFragment(
 		title: query.title || '',
 		excerpt: query.excerpt || '',
 		date: query.date || '',
+		modified: query.modified || '',
 		content: query.content || '',
 		postFormats,
 		postFormatSlug,
