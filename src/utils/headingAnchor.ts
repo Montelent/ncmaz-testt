@@ -8,6 +8,12 @@ export function slugifyHeading(text: string, index: number): string {
 	return base || 'heading-' + (index + 1)
 }
 
+export type TocHeading = {
+	id: string
+	text: string
+	level: number
+}
+
 /** Assign missing ids on h2–h4 inside a root element (browser). */
 export function ensureHeadingIds(root: HTMLElement): void {
 	const used = new Set<string>()
@@ -56,7 +62,70 @@ export function addHeadingIdsToHtml(html: string): string {
 				n++
 			}
 			used.add(id)
-			return '<h' + level + attrStr + ' id="' + id + '">' + inner + '</h' + level + '>'
+			return (
+				'<h' +
+				level +
+				attrStr +
+				' id="' +
+				id +
+				'">' +
+				inner +
+				'</h' +
+				level +
+				'>'
+			)
 		},
 	)
+}
+
+/**
+ * Extract h2–h4 headings from HTML (SSR-safe). IDs match addHeadingIdsToHtml.
+ */
+export function extractHeadingsFromHtml(html: string): TocHeading[] {
+	if (!html) return []
+
+	const used = new Set<string>()
+	const result: TocHeading[] = []
+	let index = 0
+	const re = /<h([2-4])(\s[^>]*)?>([\s\S]*?)<\/h\1>/gi
+	let match: RegExpExecArray | null
+
+	while ((match = re.exec(html)) !== null) {
+		const level = parseInt(match[1], 10)
+		const attrStr = match[2] || ''
+		const inner = match[3] || ''
+		const text = inner.replace(/<[^>]+>/g, '').trim()
+		if (!text) continue
+
+		let id = ''
+		const idMatch = attrStr.match(/\sid\s*=\s*["']([^"']+)["']/i)
+		if (idMatch?.[1]) {
+			id = idMatch[1]
+		} else {
+			id = slugifyHeading(text, index++)
+			let n = 2
+			while (used.has(id)) {
+				id = slugifyHeading(text, index) + '-' + n
+				n++
+			}
+		}
+		used.add(id)
+		result.push({ id, text, level })
+	}
+
+	return result
+}
+
+/** Build heading list from CoreHeading editor blocks (SSR-safe). */
+export function extractHeadingsFromBlocks(
+	blocks: { __typename?: string; renderedHtml?: string | null }[] | null | undefined,
+): TocHeading[] {
+	if (!blocks?.length) return []
+	const parts: string[] = []
+	for (const block of blocks) {
+		if (block?.__typename === 'CoreHeading' && block.renderedHtml) {
+			parts.push(addHeadingIdsToHtml(block.renderedHtml))
+		}
+	}
+	return extractHeadingsFromHtml(parts.join(''))
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, forwardRef, useEffect, useRef, useState } from 'react'
+import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import Tag from '@/components/Tag/Tag'
 import SingleAuthor from './SingleAuthor'
 import useIntersectionObserver from '@/hooks/useIntersectionObserver'
@@ -16,11 +16,17 @@ import NcBookmark from '@/components/NcBookmark/NcBookmark'
 import SingleCommentWrap from './SingleCommentWrap'
 import { Transition } from '@headlessui/react'
 import TableContentAnchor from './TableContentAnchor'
+import TableOfContents from '@/components/TableOfContents/TableOfContents'
 import Alert from '@/components/Alert'
 import { clsx } from 'clsx'
 import { useMusicPlayer } from '@/hooks/useMusicPlayer'
 import { flatListToHierarchical } from '@faustwp/core'
-import { ensureHeadingIds, addHeadingIdsToHtml } from '@/utils/headingAnchor'
+import {
+	ensureHeadingIds,
+	addHeadingIdsToHtml,
+	extractHeadingsFromBlocks,
+	extractHeadingsFromHtml,
+} from '@/utils/headingAnchor'
 import MyWordPressBlockViewer from '@/components/MyWordPressBlockViewer'
 import { ContentBlock } from '@faustwp/blocks/dist/mjs/components/WordPressBlocksViewer'
 
@@ -34,9 +40,7 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 	) as React.RefObject<HTMLDivElement>
 	const contentRef = useRef<HTMLDivElement>(null)
 	const progressRef = useRef<HTMLButtonElement>(null)
-	//
 	const [isShowScrollToTop, setIsShowScrollToTop] = useState<boolean>(false)
-	//
 
 	const endedAnchorEntry = useIntersectionObserver(endedAnchorRef, {
 		threshold: 0,
@@ -45,7 +49,6 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		freezeOnceVisible: false,
 	})
 
-	//
 	const {
 		author,
 		databaseId,
@@ -55,9 +58,11 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 		status,
 		date,
 		editorBlocks,
+		content,
 	} = getPostDataFromPostFragment(
 		(post || {}) as unknown as NcmazFcPostFullFieldsFragment,
 	)
+
 	let blocks: (ContentBlock | null)[] = []
 	if (editorBlocks) {
 		const withHeadingIds = (editorBlocks as any[]).map((block) => {
@@ -78,7 +83,16 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 			parentKey: 'parentClientId',
 		})
 	}
-	//
+
+	const tocHeadings = useMemo(() => {
+		const fromBlocks = extractHeadingsFromBlocks(
+			(editorBlocks as any[]) || [],
+		)
+		if (fromBlocks.length) return fromBlocks
+		return extractHeadingsFromHtml(
+			typeof content === 'string' ? addHeadingIdsToHtml(content) : '',
+		)
+	}, [editorBlocks, content])
 
 	useEffect(() => {
 		const handleProgressIndicator = () => {
@@ -148,12 +162,17 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 	return (
 		<div className="relative flex flex-col">
 			<div className="nc-SingleContent flex-1 space-y-10">
-				{/*    */}
 				{renderAlert()}
+
+				{/* TABLE OF CONTENTS — visible, crawlable anchors */}
+				{tocHeadings.length >= 2 ? (
+					<div className="mx-auto w-full max-w-screen-md">
+						<TableOfContents headings={tocHeadings} />
+					</div>
+				) : null}
 
 				{/* ENTRY CONTENT */}
 				<div
-					// not remove this id
 					id="single-entry-content"
 					className="prose mx-auto max-w-screen-md lg:prose-lg dark:prose-invert"
 					ref={contentRef}
@@ -188,7 +207,7 @@ const SingleContent: FC<SingleContentProps> = ({ post }) => {
 					<SingleAuthor author={author} />
 				</div>
 
-				{/* COMMENTS LIST - not delete comments id */}
+				{/* COMMENTS LIST */}
 				{commentStatus === 'open' ? (
 					<div
 						id="comments"
@@ -229,7 +248,6 @@ const StickyAction = forwardRef(function (
 	},
 	progressRef,
 ) {
-	//
 	const { content, databaseId, ncPostMetaData, uri, commentCount } =
 		getPostDataFromPostFragment(
 			(post || {}) as unknown as NcmazFcPostFullFieldsFragment,
