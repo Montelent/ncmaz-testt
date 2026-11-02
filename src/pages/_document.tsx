@@ -7,6 +7,15 @@ const SITE_TITLE =
 	NC_SITE_SETTINGS.site_info?.site_title || 'SamsVerge'
 const APP_NAME = 'SamsVerge'
 
+// Rank Math → Webmaster Tools codes (WP stores them; headless must output on the frontend).
+// Override via env without a code change if the codes rotate.
+const GOOGLE_SITE_VERIFICATION =
+	process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+	'LfNFFEj1UVI_ZA7I3sYFgSvdpcrTH9EtGTJROyxwER8'
+const YANDEX_VERIFICATION =
+	process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || 'b8ca7a4414b5243c'
+const BING_VERIFICATION = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || ''
+
 function v(href: string) {
 	return `${href}?v=${FAVICON_VERSION}`
 }
@@ -26,8 +35,29 @@ export default class Document extends NextDocument {
 				dir={process.env.NEXT_PUBLIC_SITE_DIRECTION}
 			>
 				<Head>
-					<link rel="preconnect" href="https://bd.samsverge.cc" crossOrigin="anonymous" />
-<link rel="dns-prefetch" href="https://bd.samsverge.cc" />
+					{/* Search-engine ownership verification (from Rank Math Webmaster Tools) */}
+					{GOOGLE_SITE_VERIFICATION ? (
+						<meta
+							name="google-site-verification"
+							content={GOOGLE_SITE_VERIFICATION}
+						/>
+					) : null}
+					{YANDEX_VERIFICATION ? (
+						<meta
+							name="yandex-verification"
+							content={YANDEX_VERIFICATION}
+						/>
+					) : null}
+					{BING_VERIFICATION ? (
+						<meta name="msvalidate.01" content={BING_VERIFICATION} />
+					) : null}
+
+					<link
+						rel="preconnect"
+						href="https://bd.samsverge.cc"
+						crossOrigin="anonymous"
+					/>
+					<link rel="dns-prefetch" href="https://bd.samsverge.cc" />
 					<link
 						href={`${SITE_URL}/api/feeds/feed.json`}
 						rel="alternate"

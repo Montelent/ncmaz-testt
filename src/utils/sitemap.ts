@@ -6,7 +6,7 @@ export const SITE_URL = (
 	process.env.NEXT_PUBLIC_URL || 'https://samsverge.cc'
 ).replace(/\/$/, '')
 
-// Paths that must never appear in a sitemap (private / app areas)
+// Paths that must never appear in a sitemap (private / app / demo areas)
 const EXCLUDED_PREFIXES = [
 	'/submission',
 	'/dashboard',
@@ -17,17 +17,36 @@ const EXCLUDED_PREFIXES = [
 	'/sign-up',
 	'/ncmaz_for_ncmazfc_preview_blocks',
 	'/api',
+	// Theme demo / variation preview pages (not real content)
+	'/block-term-variations-preview',
+	'/magazine-variations-preview',
+	'/documents',
+	'/helps',
 ]
 
 export function isExcludedPath(uri: string): boolean {
-	const clean = uri.replace(/\/$/, '')
-	return EXCLUDED_PREFIXES.some(
-		(p) => clean === p || clean.startsWith(p + '/'),
-	)
+	const clean = uri.replace(/\/$/, '') || '/'
+	if (EXCLUDED_PREFIXES.some((p) => clean === p || clean.startsWith(p + '/'))) {
+		return true
+	}
+	// Demo home layouts: /home-1 … /home-6
+	if (/^\/home-[0-9]+$/.test(clean)) return true
+	return false
+}
+
+/** Decode entities that WP/GraphQL sometimes already embeds, then escape once. */
+function decodeXmlEntities(str: string): string {
+	return str
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&#039;/g, "'")
+		.replace(/&apos;/g, "'")
 }
 
 export function escapeXml(str: string): string {
-	return str
+	return decodeXmlEntities(str)
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
@@ -52,41 +71,43 @@ export type SitemapEntry = {
 }
 
 export function renderUrlset(entries: SitemapEntry[]): string {
-	const urls = entries
-		.map(
-			(e) =>
-				'  <url>\n' +
-				`    <loc>${escapeXml(e.loc)}</loc>\n` +
-				(e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>\n` : '') +
-				'  </url>',
-		)
+	const body = entries
+		.map((e) => {
+			let row = `  <url>\n    <loc>${escapeXml(e.loc)}</loc>`
+			if (e.lastmod) row += `\n    <lastmod>${e.lastmod}</lastmod>`
+			row += '\n  </url>'
+			return row
+		})
 		.join('\n')
-
 	return (
 		'<?xml version="1.0" encoding="UTF-8"?>\n' +
-		`<?xml-stylesheet type="text/xsl" href="${SITE_URL}/sitemap.xsl"?>\n` +
+		'<?xml-stylesheet type="text/xsl" href="' +
+		SITE_URL +
+		'/sitemap.xsl"?>\n' +
 		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-		urls +
+		body +
 		'\n</urlset>\n'
 	)
 }
 
-export function renderSitemapIndex(entries: SitemapEntry[]): string {
-	const items = entries
-		.map(
-			(e) =>
-				'  <sitemap>\n' +
-				`    <loc>${escapeXml(e.loc)}</loc>\n` +
-				(e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>\n` : '') +
-				'  </sitemap>',
-		)
+export function renderSitemapIndex(
+	entries: Array<{ loc: string; lastmod?: string }>,
+): string {
+	const body = entries
+		.map((e) => {
+			let row = `  <sitemap>\n    <loc>${escapeXml(e.loc)}</loc>`
+			if (e.lastmod) row += `\n    <lastmod>${e.lastmod}</lastmod>`
+			row += '\n  </sitemap>'
+			return row
+		})
 		.join('\n')
-
 	return (
 		'<?xml version="1.0" encoding="UTF-8"?>\n' +
-		`<?xml-stylesheet type="text/xsl" href="${SITE_URL}/sitemap.xsl"?>\n` +
+		'<?xml-stylesheet type="text/xsl" href="' +
+		SITE_URL +
+		'/sitemap.xsl"?>\n' +
 		'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-		items +
+		body +
 		'\n</sitemapindex>\n'
 	)
 }
@@ -100,6 +121,8 @@ export function sendXml(
 		'Cache-Control',
 		'public, s-maxage=600, stale-while-revalidate=86400',
 	)
+	// Help crawlers; avoid accidental noindex on XML
+	ctx.res.setHeader('X-Robots-Tag', 'noindex')
 	ctx.res.write(xml)
 	ctx.res.end()
 	return { props: {} }
@@ -141,7 +164,6 @@ type ContentNodesResult = {
 }
 
 // Paginate through every published node of the given content types.
-// Iterative (not recursive) so large sites don't grow the call stack.
 export async function fetchContentNodes(
 	types: Array<'POST' | 'PAGE'>,
 ): Promise<ContentNode[]> {
