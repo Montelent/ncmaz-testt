@@ -48,6 +48,170 @@ export default function AvatarDropdown({ className = '' }: Props) {
 		//
 	}, [])
 
+	const renderMenuCreate = () => {
+		if (!NC_SITE_SETTINGS['submissions-settings']?.enable) {
+			return null
+		}
+
+		return (
+			<Link
+				href="/submission/post-submission"
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<PlusCircleIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T.Create || 'Create'}</p>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderMenuEditProfile = () => {
+		return (
+			<Link
+				href="/dashboard/edit-profile/general"
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<TwUserIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T['Edit profile']}</p>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderMenuMyPosts = () => {
+		return (
+			<Link
+				href="/dashboard/posts/published"
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<svg
+						className="h-6 w-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						strokeWidth={1.5}
+						stroke="currentColor"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+						/>
+					</svg>
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T['My Posts']}</p>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderMenuWishlist = () => {
+		return (
+			<Link
+				href="/dashboard/posts/wishlist"
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<HeartIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T.Wishlist}</p>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderMenuBookmark = () => {
+		return (
+			<Link
+				href="/readinglist"
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<BookmarkIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<span className="text-sm font-medium">{T['Reading list']}</span>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderSwitchDarkMode = () => {
+		return (
+			<div className="-m-3 flex items-center justify-between rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700">
+				<div className="flex items-center">
+					<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+						<LightBulbIcon className="h-6 w-6" />
+					</div>
+					<div className="ms-4">
+						<p className="text-sm font-medium">{T['Dark theme']}</p>
+					</div>
+				</div>
+				<SwitchDarkMode2 />
+			</div>
+		)
+	}
+
+	const renderMenuSignUp = () => {
+		return (
+			<Link
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+				href={'/sign-up'}
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<UserPlusIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T['Sign up']}</p>
+				</div>
+			</Link>
+		)
+	}
+
+	const renderMenuLogIn = () => {
+		return (
+			<button
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+				onClick={() => openLoginModal()}
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					<FingerPrintIcon className="h-6 w-6" />
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T['Sign in']}</p>
+				</div>
+			</button>
+		)
+	}
+
+	const renderMenuLogOut = () => {
+		return (
+			<button
+				className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
+				onClick={() => logout()}
+			>
+				<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
+					{!isReady ? (
+						<CircleLoading className="!h-5 !w-5" />
+					) : (
+						<PowerIcon className="h-6 w-6" />
+					)}
+				</div>
+				<div className="ms-4">
+					<p className="text-sm font-medium">{T['Sign out']}</p>
+				</div>
+			</button>
+		)
+	}
+
 	return (
 		<div className={`AvatarDropdown ${className}`}>
 			<Popover className="relative">
@@ -105,159 +269,26 @@ export default function AvatarDropdown({ className = '' }: Props) {
 											<div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
 										) : null}
 
-										{isReady && !isAuthenticated && (
-											<button
-												type="button"
-												onClick={() => {
-													close()
-													openLoginModal()
-												}}
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<FingerPrintIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['Sign in']}</p>
-												</div>
-											</button>
-										)}
-
-										{isReady && !isAuthenticated && (
-											<Link
-												href="/sign-up"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<UserPlusIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['Sign up']}</p>
-												</div>
-											</Link>
-										)}
+										{isReady && !isAuthenticated && renderMenuSignUp()}
+										{isReady && !isAuthenticated && renderMenuLogIn()}
 
 										{isReady &&
-										NC_SITE_SETTINGS['submissions-settings']?.enable &&
-										isAuthenticated && (
-											<Link
-												href="/submission/post-submission"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<PlusCircleIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T.Create || 'Create'}</p>
-												</div>
-											</Link>
-										)}
+											NC_SITE_SETTINGS['submissions-settings']?.enable &&
+											renderMenuCreate()}
 
-										{isAuthenticated && (
-											<Link
-												href="/dashboard/edit-profile/general"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<TwUserIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['Edit profile']}</p>
-												</div>
-											</Link>
-										)}
+										{isAuthenticated && renderMenuEditProfile()}
 
-										{isAuthenticated && (
-											<Link
-												href="/dashboard/posts/published"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<svg
-														className="h-6 w-6"
-														fill="none"
-														viewBox="0 0 24 24"
-														strokeWidth={1.5}
-														stroke="currentColor"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-														/>
-													</svg>
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['My Posts']}</p>
-												</div>
-											</Link>
-										)}
+										{isAuthenticated && renderMenuMyPosts()}
 
-										{isAuthenticated && (
-											<Link
-												href="/dashboard/posts/wishlist"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<HeartIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T.Wishlist}</p>
-												</div>
-											</Link>
-										)}
+										{isAuthenticated && renderMenuWishlist()}
 
-										{isAuthenticated && (
-											<Link
-												href="/readinglist"
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-												onClick={() => close()}
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<BookmarkIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<span className="text-sm font-medium">{T['Reading list']}</span>
-												</div>
-											</Link>
-										)}
+										{renderMenuBookmark()}
 
 										<div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
 
-										<div className="-m-3 flex items-center justify-between rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700">
-											<div className="flex items-center">
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<LightBulbIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['Dark theme']}</p>
-												</div>
-											</div>
-											<SwitchDarkMode2 />
-										</div>
+										{renderSwitchDarkMode()}
 
-										{isAuthenticated && (
-											<button
-												type="button"
-												onClick={() => {
-													close()
-													logout()
-												}}
-												className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50 dark:hover:bg-neutral-700"
-											>
-												<div className="flex flex-shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-													<PowerIcon className="h-6 w-6" />
-												</div>
-												<div className="ms-4">
-													<p className="text-sm font-medium">{T['Sign out']}</p>
-												</div>
-											</button>
-										)}
+										{isAuthenticated && renderMenuLogOut()}
 									</div>
 								</div>
 							</PopoverPanel>
