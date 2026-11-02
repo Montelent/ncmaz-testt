@@ -121,8 +121,6 @@ export function sendXml(
 		'Cache-Control',
 		'public, s-maxage=600, stale-while-revalidate=86400',
 	)
-	// Help crawlers; avoid accidental noindex on XML
-	ctx.res.setHeader('X-Robots-Tag', 'noindex')
 	ctx.res.write(xml)
 	ctx.res.end()
 	return { props: {} }
