@@ -38,9 +38,9 @@ module.exports = withFaust({
 
 	images: {
 		formats: ['image/avif', 'image/webp'],
-minimumCacheTTL: 2678400,
-deviceSizes: [360, 414, 640, 768, 1024, 1280],
-imageSizes: [64, 128, 256, 384],
+		minimumCacheTTL: 2678400,
+		deviceSizes: [360, 414, 640, 768, 1024, 1280],
+		imageSizes: [64, 128, 256, 384],
 		remotePatterns: [
 			{
 				protocol: 'http',
@@ -145,10 +145,10 @@ imageSizes: [64, 128, 256, 384],
 				permanent: true,
 			},
 			{
-	source: '/sitemap-0.xml',
-	destination: '/sitemap.xml',
-	permanent: true,
-},
+				source: '/sitemap-0.xml',
+				destination: '/sitemap.xml',
+				permanent: true,
+			},
 			{
 				source: '/terms-of-use',
 				destination: '/tos/',
@@ -189,9 +189,19 @@ imageSizes: [64, 128, 256, 384],
 				destination: '/posts/',
 				permanent: true,
 			},
+			// Deactivated WP page — keep URL from resolving as live content
+			{
+				source: '/helps',
+				destination: '/',
+				permanent: true,
+			},
+			{
+				source: '/helps/',
+				destination: '/',
+				permanent: true,
+			},
 		]
 	},
-
 
 	async rewrites() {
 		return [
@@ -201,7 +211,7 @@ imageSizes: [64, 128, 256, 384],
 			},
 		]
 	},
-	
+
 	async headers() {
 		return [
 			{

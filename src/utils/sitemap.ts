@@ -81,9 +81,6 @@ export function renderUrlset(entries: SitemapEntry[]): string {
 		.join('\n')
 	return (
 		'<?xml version="1.0" encoding="UTF-8"?>\n' +
-		'<?xml-stylesheet type="text/xsl" href="' +
-		SITE_URL +
-		'/sitemap.xsl"?>\n' +
 		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
 		body +
 		'\n</urlset>\n'
@@ -103,9 +100,6 @@ export function renderSitemapIndex(
 		.join('\n')
 	return (
 		'<?xml version="1.0" encoding="UTF-8"?>\n' +
-		'<?xml-stylesheet type="text/xsl" href="' +
-		SITE_URL +
-		'/sitemap.xsl"?>\n' +
 		'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
 		body +
 		'\n</sitemapindex>\n'
