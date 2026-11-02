@@ -115,6 +115,12 @@ export function sendXml(
 		'Cache-Control',
 		'public, s-maxage=600, stale-while-revalidate=86400',
 	)
+	// Help browsers show the site favicon on pure-XML sitemap views
+	// (no HTML <head>, so <link rel="icon"> is not available).
+	ctx.res.setHeader(
+		'Link',
+		'</favicon.ico>; rel="icon"; type="image/x-icon", </favicons/favicon-32x32.png>; rel="icon"; type="image/png"; sizes="32x32"',
+	)
 	ctx.res.write(xml)
 	ctx.res.end()
 	return { props: {} }
